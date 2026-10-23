@@ -12,7 +12,7 @@ Vsaka kartica vsebuje naslov dela, kratek opis, lokacijo in rok za prijavo. Na d
 
 Namen strani je izvajalcu omogočiti enostavno iskanje primernih del, pregled osnovnih informacij in prijavo na izbrano delo.
 
-![Domača stran prijavljenega uporabnika](slike/homePage.png)
+![Domača stran prijavljenega uporabnika](wireframes/WF-01.png)
 
 
 
@@ -27,7 +27,7 @@ Pod osnovnimi podatki je razdelek **Moje storitve**, v katerem so navedene vrste
 Na spodnjem delu strani je razdelek **Mnenja strank**, v katerem so prikazane ocene in komentarji stanovalcev, ki so z izvajalcem že sodelovali. Uporabnik si lahko ogleda posamezna mnenja in po potrebi odpre celoten seznam ocen.
 
 
-![Profil izvajalca](slike/profile.png)
+![Profil izvajalca](wireframes/WF-02.png)
 
 ## 3. Registracija izvajalca
 
@@ -39,4 +39,4 @@ Na levi strani je predstavljen namen registracije izvajalca. Vsebuje naslov, kra
 
 Na desni strani je registracijski obrazec z naslovom **Registracija**. Obrazec vsebuje vnosna polja za ime, priimek, e-poštni naslov, geslo in potrditev gesla. Pod polji je potrditveno polje, s katerim uporabnik potrdi strinjanje s pogoji uporabe, ter gumb za dokončanje registracije.
 
-![Stran za registracijo](slike/register1.png)
+![Stran za registracijo](wireframes/WF-03.png)
