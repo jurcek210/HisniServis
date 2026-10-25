@@ -95,22 +95,42 @@ hisni-servis/
 
 React je izbran za izdelavo uporabniškega vmesnika, Vite pa za hitro in enostavno razvojno okolje.
 
+Podrobnejša utemeljitev: [ADR-0001: Izbira tehnologij za frontend – React in Vite](adr/0001-frontend-react-vite.md)
+
 ### Node.js + Express
 
 Node.js in Express sta izbrana za izdelavo backenda in REST API-ja. Prednost je tudi uporaba JavaScripta na frontend in backend strani.
+
+Podrobnejša utemeljitev: [ADR-0002: Izbira tehnologij za backend – Node.js in Express](adr/0002-backend-nodejs-express.md)
 
 ### MongoDB
 
 MongoDB je izbran zaradi enostavne integracije z Node.js in dokumentnega načina shranjevanja podatkov.
 
+Podrobnejša utemeljitev: [ADR-0003: Izbira MongoDB in Mongoose](adr/0003-mongodb-mongoose.md)
+
 ### Mongoose
 
 Mongoose je izbran za lažje povezovanje z MongoDB ter definiranje strukture podatkov.
+
+Podrobnejša utemeljitev: [ADR-0003: Izbira MongoDB in Mongoose](adr/0003-mongodb-mongoose.md)
 
 ### REST API
 
 REST API omogoča ločitev uporabniškega vmesnika od poslovne logike in podatkovne baze.
 
+Podrobnejša utemeljitev: [ADR-0007: Izbira REST API-ja](adr/0007-rest-api.md)
+
 ### JWT in bcrypt
 
 JWT je izbran za avtentikacijo uporabnikov, bcrypt pa za varno zgoščevanje gesel.
+
+Podrobnejša utemeljitev:
+- [ADR-0004: Izbira JWT za avtentikacijo uporabnikov](adr/0004-avtentikacija-jwt.md)
+- [ADR-0005: Izbira bcrypt za varno shranjevanje gesel](adr/0005-varnost-gesel-bcrypt.md)
+
+### npm
+
+npm je izbran za upravljanje paketov, namestitev odvisnosti in izvajanje razvojnih ukazov.
+
+Podrobnejša utemeljitev: [ADR-0006: Izbira npm za upravljanje paketov](adr/0006-paketni-upravljalnik-npm.md)
