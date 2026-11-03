@@ -13,7 +13,6 @@ async function test() {
 
     console.log("MongoDB povezan!");
 
-    // Ustvarimo testnega stanovalca
     const uporabnik = await Uporabnik.create({
       ime: "Test",
       priimek: "Stanovalec",
@@ -25,7 +24,6 @@ async function test() {
 
     console.log("Uporabnik ustvarjen:", uporabnik.email);
 
-    // Preverimo, ali je geslo zgoščeno
     const shranjen = await Uporabnik.findById(uporabnik._id)
       .select("+geslo");
 
@@ -35,7 +33,6 @@ async function test() {
       await bcrypt.compare("TestGeslo123!", shranjen.geslo)
     );
 
-    // Preverimo privzeto izključitev gesla
     const brezGesla = await Uporabnik.findById(uporabnik._id);
 
     console.log(
@@ -43,7 +40,6 @@ async function test() {
       brezGesla.geslo === undefined
     );
 
-    // Preverimo unikatnost e-pošte
     try {
       await Uporabnik.create({
         ime: "Drug",
