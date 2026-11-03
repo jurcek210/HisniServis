@@ -5,6 +5,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
+import popravilaRoutes from "./routes/popravila.js";
+
 
 dotenv.config();
 
@@ -16,6 +18,7 @@ app.use(express.json());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/popravila", popravilaRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({
