@@ -1,0 +1,208 @@
+
+.objava-container {
+  min-height: 100vh;
+  width: 100%;
+  padding: 50px 20px;
+  padding-left: 8%;
+
+
+  background-image:
+    linear-gradient(
+      rgba(0, 0, 0, 0.30),
+      rgba(0, 0, 0, 0.45)
+    ),
+    url("/images/objavaPopravilaBg.png");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+/* Prozoren obrazec */
+.objava-card {
+  width: 100%;
+  max-width: 600px;
+  padding: 35px 40px;
+
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+
+  box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
+  color: white;
+}
+
+/* Naslovi */
+.objava-card h1 {
+  margin-bottom: 10px;
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  color: white;
+}
+
+.objava-card > p {
+  margin-bottom: 30px;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* Vnosna polja */
+.objava-card .form-group {
+  margin-bottom: 20px;
+}
+
+.objava-card .form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+}
+
+.objava-card .form-group input,
+.objava-card .form-group select,
+.objava-card .form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  box-sizing: border-box;
+
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 10px;
+
+  color: white;
+  font-size: 15px;
+  outline: none;
+
+  transition: all 0.2s ease;
+}
+
+.objava-card .form-group input::placeholder,
+.objava-card .form-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.objava-card .form-group input:focus,
+.objava-card .form-group select:focus,
+.objava-card .form-group textarea:focus {
+  border-color: white;
+  background: rgba(255, 255, 255, 0.23);
+}
+
+/* Izbirni meni */
+.objava-card .form-group select option {
+  background: #263445;
+  color: white;
+}
+
+/* Besedilo pod izbiro slike */
+.objava-card .form-group small {
+  display: block;
+  margin-top: 7px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Gumb za objavo */
+.objava-card .objava-gumb {
+  width: 100%;
+  padding: 14px;
+  margin-top: 10px;
+
+  background: #2563eb;
+  border: none;
+  border-radius: 10px;
+
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.objava-card .objava-gumb:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+.objava-card .objava-gumb:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Predogled fotografije */
+.objava-card .predogled {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.objava-card .predogled p {
+  color: white;
+}
+
+.objava-card .predogled img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 10px;
+}
+
+.objava-card .odstrani-sliko {
+  display: block;
+  margin: 12px auto 0;
+  padding: 9px 16px;
+
+  background: rgba(220, 38, 38, 0.85);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* Sporočila */
+.objava-card .objava-uspeh,
+.objava-card .objava-napaka {
+  padding: 12px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.objava-card .objava-uspeh {
+  background: rgba(22, 163, 74, 0.3);
+  border: 1px solid rgba(134, 239, 172, 0.6);
+  color: white;
+}
+
+.objava-card .objava-napaka {
+  background: rgba(220, 38, 38, 0.3);
+  border: 1px solid rgba(252, 165, 165, 0.6);
+  color: white;
+}
+
+/* Mobilne naprave */
+@media (max-width: 600px) {
+  .objava-container {
+    padding: 25px 15px;
+    background-attachment: scroll;
+  }
+
+  .objava-card {
+    padding: 25px 20px;
+  }
+
+  .objava-card h1 {
+    font-size: 23px;
+  }
+}

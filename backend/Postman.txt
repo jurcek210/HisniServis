@@ -12,3 +12,5 @@ POST http://localhost:5000/api/popravila
   "kategorija": "Vodovod",
   "opis": "Pipa v kopalnici pušča in jo je treba zamenjati."
 }
+
+6aea4811f7af9b30f5c575dc

@@ -9,6 +9,7 @@ import {
 
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import ObjavaPopravila from "./pages/ObjavaPopravila";
 
 const API_URL = "http://localhost:5000";
 
@@ -40,7 +41,10 @@ function PreveriPrijavo({
   return children;
 }
 
+
 function ZacetnaStran({ uporabnik, onLogout }) {
+  const navigate = useNavigate();
+
   return (
     <div className="register-page">
       <div className="register-card">
@@ -51,6 +55,14 @@ function ZacetnaStran({ uporabnik, onLogout }) {
           Prijavljeni ste kot {uporabnik.vloga}.
         </p>
 
+        {uporabnik.vloga === "Stanovalec" && (
+          <button
+            onClick={() => navigate("/stanovalec/objavi")}
+          >
+            Objavi novo popravilo
+          </button>
+        )}
+
         <button onClick={onLogout}>
           Odjava
         </button>
@@ -58,6 +70,7 @@ function ZacetnaStran({ uporabnik, onLogout }) {
     </div>
   );
 }
+
 
 function App() {
   const navigate = useNavigate();
@@ -215,6 +228,19 @@ function App() {
           />
         )
       )}
+
+      <Route
+        path="/stanovalec/objavi"
+        element={
+          <PreveriPrijavo
+            uporabnik={prijava.uporabnik}
+            token={prijava.token}
+            dovoljenaVloga="Stanovalec"
+          >
+            <ObjavaPopravila token={prijava.token} />
+          </PreveriPrijavo>
+        }
+      />
 
       <Route
         path="*"

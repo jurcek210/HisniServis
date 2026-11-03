@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import "./Register.css";
 import { Link } from "react-router-dom";
@@ -19,7 +18,6 @@ function Register() {
   const [napaka, setNapaka] = useState("");
   const [nalaganje, setNalaganje] = useState(false);
 
-  // Posodobitev podatkov ob vnosu
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -29,7 +27,6 @@ function Register() {
     }));
   };
 
-  // Pošiljanje obrazca na backend
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -83,7 +80,6 @@ function Register() {
 
       setSporocilo(data.message);
 
-      // Po uspešni registraciji počistimo obrazec
       setFormData({
         ime: "",
         priimek: "",
