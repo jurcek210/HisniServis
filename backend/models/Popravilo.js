@@ -1,9 +1,9 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const popraviloSchema = new mongoose.Schema({
   stanovalec: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Uporabnik",
     required: true,
   },
 
@@ -25,16 +25,16 @@ const popraviloSchema = new mongoose.Schema({
     trim: true,
   },
 
-    fotografija: {
+  fotografija: {
     data: {
-        type: Buffer,
-        default: null,
+      type: Buffer,
+      default: null,
     },
     contentType: {
-        type: String,
-        default: null,
+      type: String,
+      default: null,
     },
-    },
+  },
 
   status: {
     type: String,
@@ -48,4 +48,6 @@ const popraviloSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model("Popravilo", popraviloSchema);
+const Popravilo = mongoose.model("Popravilo", popraviloSchema);
+
+export default Popravilo;

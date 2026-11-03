@@ -1,0 +1,14 @@
+http://localhost:5000/api/auth/login
+
+{
+  "email": "marko@example.com",
+  "geslo": "Geslo123!"
+}
+
+POST http://localhost:5000/api/popravila
+
+{
+  "naslov": "Pokvarjena pipa",
+  "kategorija": "Vodovod",
+  "opis": "Pipa v kopalnici pušča in jo je treba zamenjati."
+}
