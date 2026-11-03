@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import "./Register.css";
+import { Link } from "react-router-dom";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -234,6 +235,10 @@ function Register() {
           <button type="submit" disabled={nalaganje}>
             {nalaganje ? "Registracija..." : "Registriraj se"}
           </button>
+          <p className="login-register-link">
+          Že imate račun?{" "}
+          <Link to="/login">Prijavite se</Link>
+          </p>
         </form>
       </div>
     </div>
