@@ -1,6 +1,7 @@
 
 import express from "express";
 import Uporabnik from "../models/Uporabnik.js";
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -126,5 +127,75 @@ router.post("/register", async (req, res) => {
     });
   }
 });
+
+
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email, geslo } = req.body ?? {};
+
+    if (
+      typeof email !== "string" ||
+      !email.trim() ||
+      typeof geslo !== "string" ||
+      !geslo
+    ) {
+      return res.status(400).json({
+        message: "Vnesite e-poštni naslov in geslo."
+      });
+    }
+
+    const uporabnik = await Uporabnik.findOne({
+      email: email.trim().toLowerCase()
+    }).select("+geslo");
+
+    if (!uporabnik) {
+      return res.status(401).json({
+        message: "Napačen e-poštni naslov ali geslo."
+      });
+    }
+
+    const pravilnoGeslo = await uporabnik.preveriGeslo(geslo);
+
+    if (!pravilnoGeslo) {
+      return res.status(401).json({
+        message: "Napačen e-poštni naslov ali geslo."
+      });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET ni nastavljen.");
+    }
+
+    const token = jwt.sign(
+      {
+        id: uporabnik._id.toString(),
+        vloga: uporabnik.vloga
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d", algorithm: "HS256" }
+    );
+
+    return res.status(200).json({
+      message: "Prijava uspešna!",
+      token,
+      uporabnik: {
+        id: uporabnik._id,
+        ime: uporabnik.ime,
+        priimek: uporabnik.priimek,
+        email: uporabnik.email,
+        vloga: uporabnik.vloga
+      }
+    });
+
+  } catch (error) {
+    console.error("Napaka pri prijavi:", error);
+
+    return res.status(500).json({
+      message: "Napaka na strežniku."
+    });
+  }
+});
+
 
 export default router;
