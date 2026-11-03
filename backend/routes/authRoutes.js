@@ -1,7 +1,7 @@
-
 import express from "express";
 import Uporabnik from "../models/Uporabnik.js";
 import jwt from "jsonwebtoken";
+import preveriJWT from "../middleware/preveriJWT.js";
 
 const router = express.Router();
 
@@ -196,6 +196,16 @@ router.post("/login", async (req, res) => {
     });
   }
 });
+
+
+ // GET /api/auth/me
+router.get("/me", preveriJWT, (req, res) => {
+  res.status(200).json({
+    message: "Uporabnik je prijavljen.",
+    uporabnik: req.uporabnik
+  });
+});
+
 
 
 export default router;

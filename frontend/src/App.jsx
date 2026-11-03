@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import {
   Routes,
   Route,
@@ -9,12 +10,15 @@ import {
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 
+const API_URL = "http://localhost:5000";
+
 const poti = {
   Stanovalec: "/stanovalec",
   Izvajalec: "/izvajalec",
   Administrator: "/admin"
 };
 
+// Zaščita React strani
 function PreveriPrijavo({
   uporabnik,
   token,
@@ -37,6 +41,7 @@ function PreveriPrijavo({
   return children;
 }
 
+// Začasna začetna stran
 function ZacetnaStran({ uporabnik, onLogout }) {
   return (
     <div className="register-page">
@@ -59,18 +64,83 @@ function ZacetnaStran({ uporabnik, onLogout }) {
 function App() {
   const navigate = useNavigate();
 
-  const [prijava, setPrijava] = useState(() => {
-    try {
-      const shranjeno = sessionStorage.getItem("prijava");
-
-      return shranjeno
-        ? JSON.parse(shranjeno)
-        : { uporabnik: null, token: null };
-    } catch {
-      return { uporabnik: null, token: null };
-    }
+  const [prijava, setPrijava] = useState({
+    uporabnik: null,
+    token: null
   });
 
+  const [preverjanje, setPreverjanje] = useState(true);
+
+  // Preverimo shranjeno prijavo ob odprtju aplikacije
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const preveriPrijavo = async () => {
+      try {
+        const shranjeno = sessionStorage.getItem("prijava");
+
+        if (!shranjeno) return;
+
+        const { token } = JSON.parse(shranjeno);
+
+        if (typeof token !== "string" || !token) {
+          throw new Error("JWT manjka.");
+        }
+
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error("Prijava ni več veljavna.");
+        }
+
+        const data = await response.json();
+
+        if (!poti[data.uporabnik?.vloga]) {
+          throw new Error("Neveljavna vloga uporabnika.");
+        }
+
+        const novaPrijava = {
+          uporabnik: data.uporabnik,
+          token
+        };
+
+        sessionStorage.setItem(
+          "prijava",
+          JSON.stringify(novaPrijava)
+        );
+
+        if (!controller.signal.aborted) {
+          setPrijava(novaPrijava);
+        }
+
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        console.error("Preverjanje prijave:", error.message);
+        sessionStorage.removeItem("prijava");
+
+        setPrijava({
+          uporabnik: null,
+          token: null
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setPreverjanje(false);
+        }
+      }
+    };
+
+    preveriPrijavo();
+
+    return () => controller.abort();
+  }, []);
+
+  // Uspešna prijava
   const handleLogin = (uporabnik, token) => {
     const novaPrijava = { uporabnik, token };
 
@@ -82,6 +152,7 @@ function App() {
     setPrijava(novaPrijava);
   };
 
+  // Odjava uporabnika
   const handleLogout = () => {
     sessionStorage.removeItem("prijava");
 
@@ -92,6 +163,17 @@ function App() {
 
     navigate("/login", { replace: true });
   };
+
+  // Dokler preverjamo prijavo, ne prikazujemo strani
+  if (preverjanje) {
+    return (
+      <div className="register-page">
+        <div className="register-card">
+          <h2>Preverjanje prijave...</h2>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
