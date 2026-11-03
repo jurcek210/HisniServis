@@ -7,13 +7,17 @@ const uporabnikSchema = new mongoose.Schema(
     ime: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      minlength: 2,
+      maxlength: 50
     },
 
     priimek: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      minlength: 2,
+      maxlength: 50
     },
 
     email: {
@@ -21,7 +25,12 @@ const uporabnikSchema = new mongoose.Schema(
       required: true,
       unique: true,
       lowercase: true,
-      trim: true
+      trim: true,
+      maxlength: 254,
+      match: [
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        "Neveljaven e-poštni naslov."
+      ]
     },
 
     geslo: {
@@ -34,8 +43,13 @@ const uporabnikSchema = new mongoose.Schema(
     telefon: {
       type: String,
       required: true,
-      trim: true
+      trim: true,
+      match: [
+        /^\+?[0-9 ]{8,20}$/,
+        "Neveljavna telefonska številka."
+      ]
     },
+
 
     vloga: {
       type: String,

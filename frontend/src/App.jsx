@@ -18,7 +18,6 @@ const poti = {
   Administrator: "/admin"
 };
 
-// Zaščita React strani
 function PreveriPrijavo({
   uporabnik,
   token,
@@ -41,7 +40,6 @@ function PreveriPrijavo({
   return children;
 }
 
-// Začasna začetna stran
 function ZacetnaStran({ uporabnik, onLogout }) {
   return (
     <div className="register-page">
@@ -71,7 +69,6 @@ function App() {
 
   const [preverjanje, setPreverjanje] = useState(true);
 
-  // Preverimo shranjeno prijavo ob odprtju aplikacije
   useEffect(() => {
     const controller = new AbortController();
 
@@ -140,7 +137,6 @@ function App() {
     return () => controller.abort();
   }, []);
 
-  // Uspešna prijava
   const handleLogin = (uporabnik, token) => {
     const novaPrijava = { uporabnik, token };
 
@@ -152,7 +148,6 @@ function App() {
     setPrijava(novaPrijava);
   };
 
-  // Odjava uporabnika
   const handleLogout = () => {
     sessionStorage.removeItem("prijava");
 
@@ -164,7 +159,6 @@ function App() {
     navigate("/login", { replace: true });
   };
 
-  // Dokler preverjamo prijavo, ne prikazujemo strani
   if (preverjanje) {
     return (
       <div className="register-page">
