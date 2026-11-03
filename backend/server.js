@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
 
 dotenv.config();
 
@@ -14,6 +15,7 @@ app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/roles", roleRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({

@@ -198,7 +198,6 @@ router.post("/login", async (req, res) => {
 });
 
 
- // GET /api/auth/me
 router.get("/me", preveriJWT, (req, res) => {
   res.status(200).json({
     message: "Uporabnik je prijavljen.",
