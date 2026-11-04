@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import "./Register.css";
-import "./Login.css";
+import "./Auth.css";
 
 function Login({ onLogin }) {
   const navigate = useNavigate();
@@ -17,7 +17,6 @@ function Login({ onLogin }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     setFormData((prev) => ({
       ...prev,
       [name]: value
@@ -66,10 +65,7 @@ function Login({ onLogin }) {
         throw new Error("Neznana uporabniška vloga.");
       }
 
-      // Posodobi stanje prijavljenega uporabnika
       onLogin(data.uporabnik, data.token);
-
-      // Preusmeri uporabnika glede na vlogo
       navigate(pot, { replace: true });
 
     } catch (error) {
@@ -80,74 +76,163 @@ function Login({ onLogin }) {
   };
 
   return (
-    <div className="register-page">
-      <div className="register-card login-card">
-        <h1>HišniServis</h1>
-        <h2>Prijava</h2>
+    <div className="auth-layout">
+      <header className="auth-header">
+        <Link to="/popravila" className="auth-logo">
+          <span className="auth-logo-icon">⌂</span>
+          HišniServis
+        </Link>
 
-        <p>Dobrodošli nazaj! Prijavite se v svoj račun.</p>
+        <span className="auth-help">Potrebujete pomoč?</span>
+      </header>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label htmlFor="email">
-              E-poštni naslov
-            </label>
+      <main className="auth-main">
+        <div className="auth-breadcrumb">
+          Delovni prostor <span>›</span> Prijava
+        </div>
 
-            <input
-              id="email"
-              type="email"
-              name="email"
-              placeholder="Vnesite e-poštni naslov"
-              value={formData.email}
-              onChange={handleChange}
-              autoComplete="email"
-              required
-            />
-          </div>
+        <div className="auth-card">
+          <aside className="auth-info">
+            <span className="auth-tag">DOBRODOŠLI NAZAJ</span>
 
-          <div className="form-group">
-            <label htmlFor="geslo">Geslo</label>
+            <h2>
+              Vaše delo.
+              <br />
+              Na enem mestu.
+            </h2>
 
-            <div className="login-password-field">
-              <input
-                id="geslo"
-                type={prikaziGeslo ? "text" : "password"}
-                name="geslo"
-                placeholder="Vnesite geslo"
-                value={formData.geslo}
-                onChange={handleChange}
-                autoComplete="current-password"
-                required
-              />
+            <p className="auth-info-description">
+              Prijavite se in nadaljujte z uporabo
+              platforme HišniServis.
+            </p>
+
+            <div className="auth-benefits">
+              <div className="auth-benefit">
+                <span className="auth-benefit-icon">⌕</span>
+                <div>
+                  <strong>Poiščite pravo delo</strong>
+                  <p>
+                    Prebrskajte razpoložljiva popravila
+                    in poiščite nove priložnosti.
+                  </p>
+                </div>
+              </div>
+
+              <div className="auth-benefit">
+                <span className="auth-benefit-icon">▤</span>
+                <div>
+                  <strong>Upravljajte popravila</strong>
+                  <p>
+                    Spremljajte objavljena popravila
+                    in njihove statuse.
+                  </p>
+                </div>
+              </div>
+
+              <div className="auth-benefit">
+                <span className="auth-benefit-icon">♧</span>
+                <div>
+                  <strong>Povežite se z izvajalci</strong>
+                  <p>
+                    Pridobite ponudbe in poiščite
+                    ustreznega izvajalca.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="auth-info-bottom">
+              <strong>Vse na enem mestu.</strong>
+              <p>
+                Enostavno upravljanje popravil
+                in ponudb izvajalcev.
+              </p>
+            </div>
+          </aside>
+
+          <section className="auth-form-section">
+            <h1>Prijavite se</h1>
+            <p className="auth-form-subtitle">
+              Vnesite svoje podatke za dostop do računa.
+            </p>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <div className="auth-field">
+                <label htmlFor="email">
+                  E-poštni naslov
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="ime@primer.si"
+                  value={formData.email}
+                  onChange={handleChange}
+                  autoComplete="email"
+                  required
+                />
+              </div>
+
+              <div className="auth-field">
+                <label htmlFor="geslo">Geslo</label>
+
+                <div className="auth-password">
+                  <input
+                    id="geslo"
+                    type={prikaziGeslo ? "text" : "password"}
+                    name="geslo"
+                    placeholder="Vnesite geslo"
+                    value={formData.geslo}
+                    onChange={handleChange}
+                    autoComplete="current-password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="auth-password-toggle"
+                    onClick={() =>
+                      setPrikaziGeslo(!prikaziGeslo)
+                    }
+                  >
+                    {prikaziGeslo ? "Skrij" : "Prikaži"}
+                  </button>
+                </div>
+              </div>
+
+              {napaka && (
+                <div className="auth-error" role="alert">
+                  {napaka}
+                </div>
+              )}
 
               <button
-                type="button"
-                className="login-password-toggle"
-                onClick={() =>
-                  setPrikaziGeslo(!prikaziGeslo)
-                }
+                type="submit"
+                className="auth-submit"
+                disabled={nalaganje}
               >
-                {prikaziGeslo ? "Skrij" : "Prikaži"}
+                {nalaganje ? "Prijavljanje..." : "Prijavi se"}
               </button>
-            </div>
-          </div>
+            </form>
 
-          {napaka && (
-            <p className="error-message" role="alert">
-              {napaka}
+            <p className="auth-switch">
+              Še nimate računa?{" "}
+              <Link to="/register">Registrirajte se</Link>
             </p>
-          )}
 
-          <button type="submit" disabled={nalaganje}>
-            {nalaganje ? "Prijavljanje..." : "Prijavi se"}
-          </button>
-        </form>
+            <div className="auth-guest">
+              <Link to="/popravila" className="auth-guest-link">
+                Preglej popravila kot gost
+              </Link>
+            </div>
+          </section>
+        </div>
 
-        <p className="login-register-link">
-          Še nimate računa?{" "}
-          <Link to="/register">Registrirajte se</Link>
-        </p>
-      </div>
+        <footer className="auth-footer">
+          <span>© 2026 HišniServis</span>
+          <span>Vse pravice pridržane</span>
+        </footer>
+      </main>
     </div>
   );
 }

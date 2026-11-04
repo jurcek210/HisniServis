@@ -10,6 +10,7 @@ import {
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ObjavaPopravila from "./pages/ObjavaPopravila";
+import PregledPopravil from "./pages/PregledPopravil";
 
 const API_URL = "http://localhost:5000";
 
@@ -65,6 +66,10 @@ function ZacetnaStran({ uporabnik, onLogout }) {
 
         <button onClick={onLogout}>
           Odjava
+        </button>
+
+        <button onClick={() => navigate("/popravila")}>
+          Pregled popravil
         </button>
       </div>
     </div>
@@ -239,6 +244,16 @@ function App() {
           >
             <ObjavaPopravila token={prijava.token} />
           </PreveriPrijavo>
+        }
+      />
+
+      <Route
+        path="/popravila"
+        element={
+          <PregledPopravil
+            uporabnik={prijava.uporabnik}
+            token={prijava.token}
+          />
         }
       />
 

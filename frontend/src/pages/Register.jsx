@@ -1,6 +1,7 @@
+
 import { useState } from "react";
-import "./Register.css";
 import { Link } from "react-router-dom";
+import "./Auth.css";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,7 @@ function Register() {
   const [sporocilo, setSporocilo] = useState("");
   const [napaka, setNapaka] = useState("");
   const [nalaganje, setNalaganje] = useState(false);
+  const [prikaziGeslo, setPrikaziGeslo] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -78,7 +80,9 @@ function Register() {
         );
       }
 
-      setSporocilo(data.message);
+      setSporocilo(
+        data.message || "Registracija je bila uspešna."
+      );
 
       setFormData({
         ime: "",
@@ -98,145 +102,369 @@ function Register() {
     }
   };
 
+  const jeIzvajalec = formData.vloga === "Izvajalec";
+
   return (
-    <div className="register-page">
-      <div className="register-card">
-        <h1>HišniServis</h1>
-        <h2>Registracija</h2>
+    <div className="auth-layout">
+      {/* ZGORNJA NAVIGACIJA */}
+      <header className="auth-header">
+        <Link to="/popravila" className="auth-logo">
+          <span className="auth-logo-icon">⌂</span>
+          HišniServis
+        </Link>
 
-        <p>Ustvarite uporabniški račun</p>
+        <span className="auth-help">
+          Potrebujete pomoč?
+        </span>
+      </header>
 
-        <form onSubmit={handleSubmit}>
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="ime">Ime</label>
-              <input
-                id="ime"
-                type="text"
-                name="ime"
-                value={formData.ime}
-                onChange={handleChange}
-                required
-              />
+      <main className="auth-main">
+        <div className="auth-breadcrumb">
+          Delovni prostor <span>›</span> Registracija
+        </div>
+
+        <div className="auth-card">
+          {/* LEVA STRAN */}
+          <aside className="auth-info">
+            <span className="auth-tag">
+              {jeIzvajalec
+                ? "ZA IZVAJALCE"
+                : "ZA STANOVALCE"}
+            </span>
+
+            <h2>
+              {jeIzvajalec ? (
+                <>
+                  Vaše znanje.
+                  <br />
+                  Nove priložnosti.
+                </>
+              ) : (
+                <>
+                  Vaš dom.
+                  <br />
+                  V dobrih rokah.
+                </>
+              )}
+            </h2>
+
+            <p className="auth-info-description">
+              {jeIzvajalec
+                ? "Povežite se z naročniki in poiščite delo, ki ustreza vašim storitvam."
+                : "Objavite popravilo, pridobite ponudbe in poiščite pravega izvajalca."}
+            </p>
+
+            <div className="auth-benefits">
+              {jeIzvajalec ? (
+                <>
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">⌕</span>
+                    <div>
+                      <strong>Poiščite prava dela</strong>
+                      <p>
+                        Prebrskajte objavljena popravila
+                        in poiščite nove priložnosti.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">♙</span>
+                    <div>
+                      <strong>Predstavite svoje storitve</strong>
+                      <p>
+                        Ustvarite profil s svojo
+                        specializacijo in opisom storitev.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">▤</span>
+                    <div>
+                      <strong>Oddajajte ponudbe</strong>
+                      <p>
+                        Ponudite svoje storitve
+                        in pridobite nova naročila.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">＋</span>
+                    <div>
+                      <strong>Objavite popravilo</strong>
+                      <p>
+                        Opišite težavo in po želji
+                        dodajte fotografijo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">▤</span>
+                    <div>
+                      <strong>Primerjajte ponudbe</strong>
+                      <p>
+                        Preglejte prejete ponudbe
+                        izvajalcev in izberite najboljšo.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="auth-benefit">
+                    <span className="auth-benefit-icon">✓</span>
+                    <div>
+                      <strong>Spremljajte popravila</strong>
+                      <p>
+                        Spremljajte napredek
+                        in zaključek posameznega popravila.
+                      </p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="form-group">
-              <label htmlFor="priimek">Priimek</label>
-              <input
-                id="priimek"
-                type="text"
-                name="priimek"
-                value={formData.priimek}
-                onChange={handleChange}
-                required
-              />
+            <div className="auth-info-bottom">
+              <strong>
+                {jeIzvajalec
+                  ? "Najprej račun, nato vaš profil."
+                  : "Preprosto do pravega izvajalca."}
+              </strong>
+              <p>
+                {jeIzvajalec
+                  ? "Po registraciji lahko začnete uporabljati svoj račun izvajalca."
+                  : "Ustvarite račun in začnite objavljati popravila."}
+              </p>
             </div>
-          </div>
+          </aside>
 
-          <div className="form-group">
-            <label htmlFor="email">E-poštni naslov</label>
-            <input
-              id="email"
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-          </div>
+          {/* DESNA STRAN */}
+          <section className="auth-form-section">
+            <h1>Ustvarite račun</h1>
 
-          <div className="form-group">
-            <label htmlFor="telefon">Telefon</label>
-            <input
-              id="telefon"
-              type="tel"
-              name="telefon"
-              value={formData.telefon}
-              onChange={handleChange}
-              required
-            />
-          </div>
+            <p className="auth-form-subtitle">
+              Registrirajte se in začnite uporabljati
+              platformo HišniServis.
+            </p>
 
-          <div className="form-group">
-            <label htmlFor="geslo">Geslo</label>
-            <input
-              id="geslo"
-              type="password"
-              name="geslo"
-              value={formData.geslo}
-              onChange={handleChange}
-              minLength={8}
-              autoComplete="new-password"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="vloga">Uporabniška vloga</label>
-            <select
-              id="vloga"
-              name="vloga"
-              value={formData.vloga}
-              onChange={handleChange}
+            <form
+              className="auth-form"
+              onSubmit={handleSubmit}
             >
-              <option value="Stanovalec">Stanovalec</option>
-              <option value="Izvajalec">Izvajalec</option>
-            </select>
-          </div>
+              {/* IME IN PRIIMEK */}
+              <div className="auth-row">
+                <div className="auth-field">
+                  <label htmlFor="ime">Ime</label>
+                  <input
+                    id="ime"
+                    type="text"
+                    name="ime"
+                    placeholder="Vnesite ime"
+                    value={formData.ime}
+                    onChange={handleChange}
+                    autoComplete="given-name"
+                    required
+                  />
+                </div>
 
-          {formData.vloga === "Izvajalec" && (
-            <>
-              <div className="form-group">
-                <label htmlFor="specializacija">
-                  Specializacija
+                <div className="auth-field">
+                  <label htmlFor="priimek">
+                    Priimek
+                  </label>
+                  <input
+                    id="priimek"
+                    type="text"
+                    name="priimek"
+                    placeholder="Vnesite priimek"
+                    value={formData.priimek}
+                    onChange={handleChange}
+                    autoComplete="family-name"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* EMAIL */}
+              <div className="auth-field">
+                <label htmlFor="email">
+                  E-poštni naslov
                 </label>
                 <input
-                  id="specializacija"
-                  type="text"
-                  name="specializacija"
-                  value={formData.specializacija}
+                  id="email"
+                  type="email"
+                  name="email"
+                  placeholder="ime@primer.si"
+                  value={formData.email}
                   onChange={handleChange}
-                  placeholder="Npr. Električar"
+                  autoComplete="email"
                   required
                 />
               </div>
 
-              <div className="form-group">
-                <label htmlFor="opis">Opis storitev</label>
-                <textarea
-                  id="opis"
-                  name="opis"
-                  value={formData.opis}
+              {/* TELEFON */}
+              <div className="auth-field">
+                <label htmlFor="telefon">
+                  Telefonska številka
+                </label>
+                <input
+                  id="telefon"
+                  type="tel"
+                  name="telefon"
+                  placeholder="Npr. 041123456"
+                  value={formData.telefon}
                   onChange={handleChange}
-                  placeholder="Opišite svoje storitve..."
-                  rows={3}
+                  autoComplete="tel"
                   required
                 />
               </div>
-            </>
-          )}
 
-          {sporocilo && (
-            <p className="success-message" role="status">
-              {sporocilo}
+              {/* GESLO */}
+              <div className="auth-field">
+                <label htmlFor="geslo">Geslo</label>
+
+                <div className="auth-password">
+                  <input
+                    id="geslo"
+                    type={prikaziGeslo ? "text" : "password"}
+                    name="geslo"
+                    placeholder="Ustvarite geslo"
+                    value={formData.geslo}
+                    onChange={handleChange}
+                    minLength={8}
+                    autoComplete="new-password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    className="auth-password-toggle"
+                    onClick={() =>
+                      setPrikaziGeslo(!prikaziGeslo)
+                    }
+                  >
+                    {prikaziGeslo ? "Skrij" : "Prikaži"}
+                  </button>
+                </div>
+
+                <small className="auth-hint">
+                  Vsaj 8 znakov.
+                </small>
+              </div>
+
+              {/* UPORABNIŠKA VLOGA */}
+              <div className="auth-field">
+                <label htmlFor="vloga">
+                  Registrirajte se kot
+                </label>
+
+                <select
+                  id="vloga"
+                  name="vloga"
+                  value={formData.vloga}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="Stanovalec">
+                    Stanovalec
+                  </option>
+                  <option value="Izvajalec">
+                    Izvajalec
+                  </option>
+                </select>
+              </div>
+
+              {/* DODATNA POLJA ZA IZVAJALCA */}
+              {jeIzvajalec && (
+                <div className="auth-extra-fields">
+                  <div className="auth-extra-header">
+                    Podatki o vaših storitvah
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="specializacija">
+                      Specializacija
+                    </label>
+
+                    <input
+                      id="specializacija"
+                      type="text"
+                      name="specializacija"
+                      placeholder="Npr. Električar"
+                      value={formData.specializacija}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="opis">
+                      Opis storitev
+                    </label>
+
+                    <textarea
+                      id="opis"
+                      name="opis"
+                      placeholder="Opišite svoje storitve..."
+                      rows={4}
+                      value={formData.opis}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* SPOROČILA */}
+              {sporocilo && (
+                <div className="auth-success" role="status">
+                  {sporocilo}
+                </div>
+              )}
+
+              {napaka && (
+                <div className="auth-error" role="alert">
+                  {napaka}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="auth-submit"
+                disabled={nalaganje}
+              >
+                {nalaganje
+                  ? "Registracija..."
+                  : "Registriraj se"}
+              </button>
+            </form>
+
+            <p className="auth-switch">
+              Že imate račun?{" "}
+              <Link to="/login">
+                Prijavite se
+              </Link>
             </p>
-          )}
 
-          {napaka && (
-            <p className="error-message" role="alert">
-              {napaka}
-            </p>
-          )}
+            <div className="auth-guest">
+              <Link
+                to="/popravila"
+                className="auth-guest-link"
+              >
+                Preglej popravila kot gost
+              </Link>
+            </div>
+          </section>
+        </div>
 
-          <button type="submit" disabled={nalaganje}>
-            {nalaganje ? "Registracija..." : "Registriraj se"}
-          </button>
-          <p className="login-register-link">
-          Že imate račun?{" "}
-          <Link to="/login">Prijavite se</Link>
-          </p>
-        </form>
-      </div>
+        <footer className="auth-footer">
+          <span>© 2026 HišniServis</span>
+          <span>Vse pravice pridržane</span>
+        </footer>
+      </main>
     </div>
   );
 }
