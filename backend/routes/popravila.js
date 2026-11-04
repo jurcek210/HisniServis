@@ -2,6 +2,7 @@
 import express from "express";
 import multer from "multer";
 import Popravilo from "../models/Popravilo.js";
+import mongoose from "mongoose";
 
 import preveriJWT from "../middleware/preveriJWT.js";
 import preveriVlogo from "../middleware/preveriVlogo.js";
@@ -300,5 +301,52 @@ router.delete("/:id", preveriJWT, async (req, res) => {
   }
 });
 
+
+
+
+router.get("/:id", preveriJWT, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    const popravilo = await Popravilo.findById(req.params.id)
+      .select(
+        "stanovalec naslov kategorija opis lokacija status datum_objave fotografija.contentType"
+      )
+      .lean();
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    return res.status(200).json({
+      popravilo: {
+        id: popravilo._id,
+        naslov: popravilo.naslov,
+        kategorija: popravilo.kategorija,
+        opis: popravilo.opis,
+        lokacija: popravilo.lokacija || null,
+        status: popravilo.status,
+        datum_objave: popravilo.datum_objave,
+        stanovalec: popravilo.stanovalec?.toString(),
+        fotografijaDodana: Boolean(
+          popravilo.fotografija?.contentType
+        ),
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri pridobivanju popravila.",
+    });
+  }
+});
 
 export default router;

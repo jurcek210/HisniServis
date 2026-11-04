@@ -11,6 +11,7 @@ import Register from "./pages/Register";
 import Login from "./pages/Login";
 import ObjavaPopravila from "./pages/ObjavaPopravila";
 import PregledPopravil from "./pages/PregledPopravil";
+import PodrobnostiPopravila from "./pages/PodrobnostiPopravila";
 
 const API_URL = "http://localhost:5000";
 
@@ -256,6 +257,22 @@ function App() {
           />
         }
       />
+
+            
+      <Route
+        path="/popravila/:id"
+        element={
+          prijava.uporabnik && prijava.token ? (
+            <PodrobnostiPopravila
+              uporabnik={prijava.uporabnik}
+              token={prijava.token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
 
       <Route
         path="*"
