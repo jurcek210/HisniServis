@@ -1,0 +1,426 @@
+
+/* OSNOVNA POSTAVITEV */
+
+.auth-layout {
+  min-height: 100vh;
+  background: #f4f6f7;
+  color: #20343b;
+  font-family: Inter, Arial, sans-serif;
+}
+
+.auth-layout * {
+  box-sizing: border-box;
+}
+
+/* ZGORNJA NAVIGACIJA */
+
+.auth-header {
+  height: 65px;
+  padding: 0 5%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border-bottom: 1px solid #e1e8eb;
+}
+
+.auth-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #20343b;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: #008579;
+  color: white;
+  font-size: 20px;
+}
+
+.auth-help {
+  font-size: 12px;
+  color: #81919b;
+}
+
+/* GLAVNA VSEBINA */
+
+.auth-main {
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 38px 25px;
+}
+
+.auth-breadcrumb {
+  font-size: 12px;
+  color: #84949c;
+  margin-bottom: 22px;
+}
+
+.auth-breadcrumb span {
+  margin: 0 10px;
+}
+
+/* KARTICA */
+
+.auth-card {
+  display: grid;
+  grid-template-columns: 40% 60%;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 18px rgba(30, 60, 65, 0.03);
+}
+
+/* LEVA STRAN */
+
+.auth-info {
+  display: flex;
+  flex-direction: column;
+  min-height: 510px;
+  padding: 35px;
+  background: #f0f9f6;
+}
+
+.auth-tag {
+  align-self: flex-start;
+  padding: 7px 10px;
+  border-radius: 5px;
+  background: #e1f3ee;
+  color: #008579;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.auth-info h2 {
+  margin: 22px 0 15px;
+  font-size: 29px;
+  line-height: 1.2;
+  color: #19343a;
+}
+
+.auth-info-description {
+  margin-bottom: 28px;
+  color: #80949e;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.auth-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.auth-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.auth-benefit-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 35px;
+  height: 35px;
+  background: #e4f3ee;
+  color: #008579;
+  border-radius: 8px;
+  font-size: 18px;
+}
+
+.auth-benefit strong {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 13px;
+}
+
+.auth-benefit p {
+  margin: 0;
+  font-size: 12px;
+  color: #80949e;
+  line-height: 1.6;
+}
+
+.auth-info-bottom {
+  margin-top: auto;
+  padding-top: 30px;
+}
+
+.auth-info-bottom strong {
+  color: #008579;
+  font-size: 12px;
+}
+
+.auth-info-bottom p {
+  color: #80949e;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* DESNA STRAN - OBRAZEC */
+
+.auth-form-section {
+  padding: 38px 42px;
+}
+
+.auth-form-section h1 {
+  margin: 0 0 9px;
+  font-size: 29px;
+  color: #20343b;
+}
+
+.auth-form-subtitle {
+  margin-bottom: 27px;
+  font-size: 13px;
+  color: #81919b;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.auth-field label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #354b53;
+}
+
+.auth-field input,
+.auth-field select {
+  width: 100%;
+  height: 43px;
+  padding: 0 13px;
+  background: white;
+  border: 1px solid #dce4e8;
+  border-radius: 7px;
+  color: #20343b;
+  font-size: 13px;
+  outline: none;
+}
+
+.auth-field input:focus,
+.auth-field select:focus {
+  border-color: #008579;
+  box-shadow: 0 0 0 3px rgba(0, 133, 121, 0.08);
+}
+
+.auth-field input::placeholder {
+  color: #a0adb3;
+}
+
+.auth-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* GESLO */
+
+.auth-password {
+  position: relative;
+}
+
+.auth-password input {
+  padding-right: 75px;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 5px;
+  border: none;
+  background: transparent;
+  color: #637b86;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.auth-hint {
+  display: block;
+  margin-top: 6px;
+  color: #91a1a9;
+  font-size: 11px;
+}
+
+/* GUMB */
+
+.auth-submit {
+  width: 100%;
+  padding: 13px;
+  background: #008579;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.auth-submit:hover {
+  background: #006b62;
+}
+
+.auth-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* POVEZAVE */
+
+.auth-switch {
+  margin-top: 20px;
+  text-align: center;
+  color: #81919b;
+  font-size: 12px;
+}
+
+.auth-switch a,
+.auth-guest-link {
+  color: #008579;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.auth-switch a:hover,
+.auth-guest-link:hover {
+  text-decoration: underline;
+}
+
+.auth-guest {
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* NAPAKE */
+
+.auth-error {
+  padding: 12px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 7px;
+  font-size: 12px;
+}
+
+/* FOOTER */
+
+.auth-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  color: #8a9aa3;
+  font-size: 11px;
+}
+
+/* MOBILNA PRILAGODITEV */
+
+@media (max-width: 800px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-info {
+    min-height: auto;
+    padding: 28px;
+  }
+
+  .auth-info-bottom {
+    margin-top: 30px;
+  }
+
+  .auth-form-section {
+    padding: 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-header {
+    padding: 0 18px;
+  }
+
+  .auth-main {
+    padding: 25px 15px;
+  }
+
+  .auth-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-form-section {
+    padding: 25px 20px;
+  }
+
+  .auth-info h2,
+  .auth-form-section h1 {
+    font-size: 24px;
+  }
+}
+
+/* DODATNI SLOGI ZA REGISTRACIJO */
+
+.auth-extra-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  margin-top: 5px;
+  background: #f5faf8;
+  border: 1px solid #deeee9;
+  border-radius: 9px;
+}
+
+.auth-extra-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: #008579;
+}
+
+.auth-extra-fields textarea {
+  display: block;
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid #dce4e8;
+  border-radius: 7px;
+  background: white;
+  color: #20343b;
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+}
+
+.auth-extra-fields textarea:focus {
+  border-color: #008579;
+  box-shadow: 0 0 0 3px rgba(0, 133, 121, 0.08);
+}
+
+.auth-extra-fields textarea::placeholder {
+  color: #a0adb3;
+}
+
+.auth-success {
+  padding: 12px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 7px;
+  font-size: 12px;
+}

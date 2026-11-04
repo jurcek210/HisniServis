@@ -148,7 +148,7 @@ router.get(
         status: "ODPRTO"
       })
         .select(
-          "naslov kategorija opis status datum_objave fotografija.contentType"
+          "stanovalec naslov kategorija opis status datum_objave fotografija.contentType"
         )
         .sort({ datum_objave: -1 })
         .lean();
@@ -160,6 +160,7 @@ router.get(
         opis: popravilo.opis,
         status: popravilo.status,
         datum_objave: popravilo.datum_objave,
+        stanovalec: popravilo.stanovalec?.toString(),
         fotografijaDodana: Boolean(
           popravilo.fotografija?.contentType
         ),
@@ -180,6 +181,121 @@ router.get(
     }
   }
 );
+
+
+router.patch("/:id", preveriJWT, async (req, res) => {
+  try {
+    const popravilo = await Popravilo.findById(req.params.id);
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    const jeLastnik =
+      popravilo.stanovalec.toString() === req.uporabnik.id;
+
+    if (req.uporabnik.vloga !== "Stanovalec" || !jeLastnik) {
+      return res.status(403).json({
+        message: "Urejate lahko samo svoja popravila.",
+      });
+    }
+
+    if (popravilo.status !== "ODPRTO") {
+      return res.status(400).json({
+        message: "Urejate lahko samo odprta popravila.",
+      });
+    }
+
+    const { naslov, kategorija, opis } = req.body;
+
+    if (
+      typeof naslov !== "string" || !naslov.trim() ||
+      typeof kategorija !== "string" || !kategorija.trim() ||
+      typeof opis !== "string" || !opis.trim()
+    ) {
+      return res.status(400).json({
+        message: "Vsa obvezna polja morajo biti izpolnjena.",
+      });
+    }
+
+    popravilo.naslov = naslov.trim();
+    popravilo.kategorija = kategorija.trim();
+    popravilo.opis = opis.trim();
+
+    await popravilo.save();
+
+    return res.status(200).json({
+      message: "Popravilo je bilo uspešno posodobljeno.",
+    });
+
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri posodabljanju popravila.",
+    });
+  }
+});
+
+
+
+
+router.delete("/:id", preveriJWT, async (req, res) => {
+  try {
+    const popravilo = await Popravilo.findById(req.params.id);
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    const jeAdmin = req.uporabnik.vloga === "Administrator";
+
+    const jeLastnik =
+      req.uporabnik.vloga === "Stanovalec" &&
+      popravilo.stanovalec.toString() === req.uporabnik.id;
+
+    if (!jeAdmin && !jeLastnik) {
+      return res.status(403).json({
+        message: "Nimate dovoljenja za brisanje popravila.",
+      });
+    }
+
+    if (!jeAdmin && popravilo.status !== "ODPRTO") {
+      return res.status(400).json({
+        message: "Izbrišete lahko samo odprta popravila.",
+      });
+    }
+
+    await popravilo.deleteOne();
+
+    return res.status(200).json({
+      message: "Popravilo je bilo uspešno izbrisano.",
+    });
+
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri brisanju popravila.",
+    });
+  }
+});
 
 
 export default router;

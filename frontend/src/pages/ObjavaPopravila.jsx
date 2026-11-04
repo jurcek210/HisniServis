@@ -1,5 +1,9 @@
-import { useEffect, useState } from "react";
+
+import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import "./ObjavaPopravila.css";
+
+const API_URL = "http://localhost:5000";
 
 function ObjavaPopravila({ token }) {
   const [naslov, setNaslov] = useState("");
@@ -11,6 +15,8 @@ function ObjavaPopravila({ token }) {
   const [nalaganje, setNalaganje] = useState(false);
   const [sporocilo, setSporocilo] = useState("");
   const [napaka, setNapaka] = useState("");
+
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (!fotografija) {
@@ -25,12 +31,9 @@ function ObjavaPopravila({ token }) {
   }, [fotografija]);
 
   const izberiFotografijo = (e) => {
-    const datoteka = e.target.files[0];
+    const datoteka = e.target.files?.[0];
 
-    if (!datoteka) {
-      setFotografija(null);
-      return;
-    }
+    if (!datoteka) return;
 
     const dovoljeniTipi = [
       "image/jpeg",
@@ -39,19 +42,29 @@ function ObjavaPopravila({ token }) {
     ];
 
     if (!dovoljeniTipi.includes(datoteka.type)) {
-      setNapaka("Dovoljeni so JPG, PNG in WebP.");
+      setNapaka("Dovoljeni formati so JPG, PNG in WebP.");
       e.target.value = "";
+      setFotografija(null);
       return;
     }
 
     if (datoteka.size > 2 * 1024 * 1024) {
       setNapaka("Fotografija ne sme presegati 2 MB.");
       e.target.value = "";
+      setFotografija(null);
       return;
     }
 
     setNapaka("");
     setFotografija(datoteka);
+  };
+
+  const odstraniFotografijo = () => {
+    setFotografija(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const objaviPopravilo = async (e) => {
@@ -62,22 +75,26 @@ function ObjavaPopravila({ token }) {
     setNalaganje(true);
 
     try {
-
       if (!token) {
         throw new Error("Za objavo se morate prijaviti.");
       }
 
+      if (!naslov.trim() || !kategorija || !opis.trim()) {
+        throw new Error("Izpolnite vsa obvezna polja.");
+      }
+
       const podatki = new FormData();
-      podatki.append("naslov", naslov);
+
+      podatki.append("naslov", naslov.trim());
       podatki.append("kategorija", kategorija);
-      podatki.append("opis", opis);
+      podatki.append("opis", opis.trim());
 
       if (fotografija) {
         podatki.append("fotografija", fotografija);
       }
 
       const response = await fetch(
-        "http://localhost:5000/api/popravila",
+        `${API_URL}/api/popravila`,
         {
           method: "POST",
           headers: {
@@ -100,7 +117,7 @@ function ObjavaPopravila({ token }) {
       setNaslov("");
       setKategorija("");
       setOpis("");
-      setFotografija(null);
+      odstraniFotografijo();
 
     } catch (error) {
       setNapaka(error.message);
@@ -110,93 +127,240 @@ function ObjavaPopravila({ token }) {
   };
 
   return (
-    <div className="objava-container">
-      <div className="objava-card">
-        <h1>Objava novega popravila</h1>
-        <p>Opišite težavo in pridobite ponudbe izvajalcev.</p>
+    <div className="op-layout">
+      {/* ZGORNJA NAVIGACIJA */}
+      <header className="op-header">
+        <Link to="/stanovalec" className="op-logo">
+          <span className="op-logo-icon">⌂</span>
+          <strong>HišniServis</strong>
+          <span className="op-logo-subtitle">
+            Delovni prostor
+          </span>
+        </Link>
 
-        {sporocilo && (
-          <div className="objava-uspeh">{sporocilo}</div>
-        )}
+        <Link to="/popravila" className="op-header-link">
+          Pregled popravil
+        </Link>
+      </header>
 
-        {napaka && (
-          <div className="objava-napaka">{napaka}</div>
-        )}
+      <main className="op-main">
+        {/* NAVIGACIJA */}
+        <div className="op-breadcrumb">
+          <Link to="/stanovalec">Delovni prostor</Link>
+          <span>›</span>
+          Nova objava
+        </div>
 
-        <form onSubmit={objaviPopravilo}>
-          <div className="form-group">
-            <label>Naslov popravila</label>
-            <input
-              type="text"
-              placeholder="Npr. Pokvarjena pipa"
-              value={naslov}
-              onChange={(e) => setNaslov(e.target.value)}
-              required
-            />
-          </div>
+        <div className="op-page-heading">
+          <h1>Objavite novo popravilo</h1>
+          <p>
+            Opišite težavo in pridobite ponudbe izvajalcev.
+          </p>
+        </div>
 
-          <div className="form-group">
-            <label>Kategorija</label>
-            <select
-              value={kategorija}
-              onChange={(e) => setKategorija(e.target.value)}
-              required
-            >
-              <option value="">Izberite kategorijo</option>
-              <option value="Vodovod">Vodovod</option>
-              <option value="Elektrika">Elektrika</option>
-              <option value="Ogrevanje">Ogrevanje</option>
-              <option value="Pleskanje">Pleskanje</option>
-              <option value="Mizarstvo">Mizarstvo</option>
-              <option value="Drugo">Drugo</option>
-            </select>
-          </div>
+        <div className="op-card">
+          {/* LEVA STRAN */}
+          <aside className="op-info">
+            <span className="op-tag">ZA STANOVALCE</span>
 
-          <div className="form-group">
-            <label>Opis težave</label>
-            <textarea
-              placeholder="Podrobno opišite težavo..."
-              value={opis}
-              onChange={(e) => setOpis(e.target.value)}
-              rows="5"
-              required
-            />
-          </div>
+            <h2>
+              Vaš dom.
+              <br />
+              V dobrih rokah.
+            </h2>
 
-          <div className="form-group">
-            <label>Fotografija (neobvezno)</label>
-            <input
-              type="file"
-              accept=".jpg,.jpeg,.png,.webp"
-              onChange={izberiFotografijo}
-              key={fotografija ? "izbrana" : "prazna"}
-            />
-            <small>Dovoljeni formati: JPG, PNG, WebP (največ 2 MB).</small>
-          </div>
+            <p className="op-info-description">
+              Objavite popravilo v nekaj korakih in
+              poiščite ustreznega izvajalca za svoj dom.
+            </p>
 
-          {predogled && (
-            <div className="predogled">
-              <p>Predogled fotografije:</p>
-              <img src={predogled} alt="Predogled popravila" />
-              <button
-                type="button"
-                className="odstrani-sliko"
-                onClick={() => setFotografija(null)}
-              >
-                Odstrani fotografijo
-              </button>
+            <div className="op-benefits">
+              <div className="op-benefit">
+                <span className="op-benefit-icon">▤</span>
+                <div>
+                  <strong>Opišite težavo</strong>
+                  <p>
+                    Vnesite naslov, kategorijo in
+                    podroben opis popravila.
+                  </p>
+                </div>
+              </div>
+
+              <div className="op-benefit">
+                <span className="op-benefit-icon">▧</span>
+                <div>
+                  <strong>Dodajte fotografijo</strong>
+                  <p>
+                    Fotografija izvajalcem pomaga
+                    bolje razumeti težavo.
+                  </p>
+                </div>
+              </div>
+
+              <div className="op-benefit">
+                <span className="op-benefit-icon">♧</span>
+                <div>
+                  <strong>Pridobite ponudbe</strong>
+                  <p>
+                    Izvajalci lahko pregledajo
+                    vašo objavo in oddajo ponudbo.
+                  </p>
+                </div>
+              </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            className="objava-gumb"
-            disabled={nalaganje}
-          >
-            {nalaganje ? "Objavljanje..." : "Objavi popravilo"}
-          </button>
-        </form>
-      </div>
+            <div className="op-info-bottom">
+              <strong>Preprosto do prave rešitve.</strong>
+              <p>
+                Po objavi bo vaše popravilo vidno
+                na seznamu razpoložljivih popravil.
+              </p>
+            </div>
+          </aside>
+
+          {/* DESNA STRAN - OBRAZEC */}
+          <section className="op-form-section">
+            <h2>Podatki o popravilu</h2>
+            <p className="op-form-subtitle">
+              Izpolnite spodnja polja in objavite popravilo.
+            </p>
+
+            {sporocilo && (
+              <div className="op-success" role="status">
+                {sporocilo}
+              </div>
+            )}
+
+            {napaka && (
+              <div className="op-error" role="alert">
+                {napaka}
+              </div>
+            )}
+
+            <form className="op-form" onSubmit={objaviPopravilo}>
+              <div className="op-field">
+                <label htmlFor="naslov">
+                  Naslov popravila
+                </label>
+                <input
+                  id="naslov"
+                  type="text"
+                  placeholder="Npr. Pokvarjena pipa"
+                  value={naslov}
+                  onChange={(e) => setNaslov(e.target.value)}
+                  maxLength={120}
+                  required
+                />
+              </div>
+
+              <div className="op-field">
+                <label htmlFor="kategorija">
+                  Kategorija
+                </label>
+                <select
+                  id="kategorija"
+                  value={kategorija}
+                  onChange={(e) => setKategorija(e.target.value)}
+                  required
+                >
+                  <option value="">
+                    Izberite kategorijo
+                  </option>
+                  <option value="Vodovod">Vodovod</option>
+                  <option value="Elektrika">Elektrika</option>
+                  <option value="Ogrevanje">Ogrevanje</option>
+                  <option value="Pleskanje">Pleskanje</option>
+                  <option value="Mizarstvo">Mizarstvo</option>
+                  <option value="Drugo">Drugo</option>
+                </select>
+              </div>
+
+              <div className="op-field">
+                <label htmlFor="opis">
+                  Opis težave
+                </label>
+                <textarea
+                  id="opis"
+                  placeholder="Podrobno opišite težavo, lokacijo in kaj je treba popraviti..."
+                  value={opis}
+                  onChange={(e) => setOpis(e.target.value)}
+                  rows={5}
+                  maxLength={2000}
+                  required
+                />
+                <small>
+                  {opis.length}/2000 znakov
+                </small>
+              </div>
+
+              <div className="op-field">
+                <label htmlFor="fotografija">
+                  Fotografija (neobvezno)
+                </label>
+
+                <div className="op-upload">
+                  <span className="op-upload-icon">▧</span>
+
+                  <strong>
+                    {fotografija
+                      ? fotografija.name
+                      : "Dodajte fotografijo težave"}
+                  </strong>
+
+                  <p>
+                    JPG, PNG ali WebP – največ 2 MB
+                  </p>
+
+                  <input
+                    id="fotografija"
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp"
+                    onChange={izberiFotografijo}
+                  />
+                </div>
+              </div>
+
+              {predogled && (
+                <div className="op-preview">
+                  <img
+                    src={predogled}
+                    alt="Predogled fotografije popravila"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={odstraniFotografijo}
+                  >
+                    Odstrani fotografijo
+                  </button>
+                </div>
+              )}
+
+              <div className="op-form-actions">
+                <Link to="/popravila" className="op-cancel">
+                  Prekliči
+                </Link>
+
+                <button
+                  type="submit"
+                  className="op-submit"
+                  disabled={nalaganje}
+                >
+                  {nalaganje
+                    ? "Objavljanje..."
+                    : "Objavi popravilo"}
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <footer className="op-footer">
+          <span>© 2026 HišniServis</span>
+          <span>Vse pravice pridržane</span>
+        </footer>
+      </main>
     </div>
   );
 }
