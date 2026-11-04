@@ -432,6 +432,27 @@ router.patch(
           error.httpStatus = 409;
           throw error;
         }
+
+        
+        await Ponudba.updateMany(
+          {
+            popravilo: popravilo._id,
+
+            _id: { $ne: izbranaPonudba._id },
+
+            status: "ODDANA",
+          },
+          {
+            $set: {
+              status: "ZAVRNJENA",
+            },
+          },
+          {
+            session,
+            runValidators: true,
+          }
+        );
+
       });
 
       return res.status(200).json({
