@@ -139,4 +139,47 @@ router.get("/:id/fotografija", preveriJWT, async (req, res) => {
   }
 });
 
+
+router.get(
+  "/",
+  async (req, res) => {
+    try {
+      const popravila = await Popravilo.find({
+        status: "ODPRTO"
+      })
+        .select(
+          "naslov kategorija opis status datum_objave fotografija.contentType"
+        )
+        .sort({ datum_objave: -1 })
+        .lean();
+
+      const seznam = popravila.map((popravilo) => ({
+        id: popravilo._id,
+        naslov: popravilo.naslov,
+        kategorija: popravilo.kategorija,
+        opis: popravilo.opis,
+        status: popravilo.status,
+        datum_objave: popravilo.datum_objave,
+        fotografijaDodana: Boolean(
+          popravilo.fotografija?.contentType
+        ),
+      }));
+
+      return res.status(200).json({
+        message: "Seznam popravil uspešno pridobljen.",
+        stevilo: seznam.length,
+        popravila: seznam,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri pridobivanju popravil.",
+      });
+    }
+  }
+);
+
+
 export default router;
