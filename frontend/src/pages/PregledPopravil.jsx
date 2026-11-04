@@ -36,6 +36,7 @@ const mesta = [
 function PregledPopravil({ uporabnik, token }) {
   const navigate = useNavigate();
 
+  // PODATKI
   const [popravila, setPopravila] = useState([]);
   const [nalaganje, setNalaganje] = useState(true);
   const [napaka, setNapaka] = useState("");
@@ -50,6 +51,8 @@ function PregledPopravil({ uporabnik, token }) {
   const [izbrano, setIzbrano] = useState(null);
   const [urejanje, setUrejanje] = useState(null);
   const [shranjevanje, setShranjevanje] = useState(false);
+
+  const [steviloPonudb, setSteviloPonudb] = useState(null);
 
   const [obrazec, setObrazec] = useState({
     naslov: "",
@@ -113,6 +116,51 @@ function PregledPopravil({ uporabnik, token }) {
 
     return () => controller.abort();
   }, []);
+
+
+    
+    useEffect(() => {
+    if (uporabnik?.vloga !== "Stanovalec" || !token) {
+        return;
+    }
+
+    const controller = new AbortController();
+
+    const pridobiSteviloPonudb = async () => {
+        try {
+        const response = await fetch(
+            `${API_URL}/api/ponudbe/prejete`,
+            {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(
+            "Napaka pri pridobivanju števila ponudb."
+            );
+        }
+
+        const data = await response.json();
+
+        if (!controller.signal.aborted) {
+            setSteviloPonudb(data.stevilo);
+        }
+        } catch (error) {
+        if (!controller.signal.aborted) {
+            console.error(error);
+        }
+        }
+    };
+
+    pridobiSteviloPonudb();
+
+    return () => controller.abort();
+    }, [uporabnik?.vloga, token]);
+
 
   const filtriranaPopravila = useMemo(() => {
     const iskano = iskanje.trim().toLowerCase();
@@ -381,6 +429,24 @@ function PregledPopravil({ uporabnik, token }) {
             Razpoložljiva popravila
           </Link>
 
+          
+            {vloga === "Stanovalec" && (
+            <Link
+                to="/stanovalec/ponudbe"
+                className="pp-menu-item"
+            >
+                <span>✉</span>
+                Prejete ponudbe
+
+                <span className="pr-sidebar-count">
+                {steviloPonudb === null
+                    ? "..."
+                    : steviloPonudb}
+                </span>
+            </Link>
+            )}
+
+
           {vloga === "Stanovalec" && (
             <Link
               to="/stanovalec/objavi"
@@ -633,12 +699,14 @@ function PregledPopravil({ uporabnik, token }) {
 
                       <div className="pp-actions">
                         {vloga !== "Gost" && (
-                            <button
+                          <button
                             className="pp-details"
-                            onClick={() => navigate(`/popravila/${popravilo.id}`)}
-                            >
+                            onClick={() =>
+                              setIzbrano(popravilo)
+                            }
+                          >
                             Podrobnosti ›
-                            </button>
+                          </button>
                         )}
 
                         {jeLastnik(popravilo) && (

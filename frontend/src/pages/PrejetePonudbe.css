@@ -1,0 +1,283 @@
+
+@import "./PregledPopravil.css";
+
+.pr-sidebar-count {
+  margin-left: auto;
+  min-width: 26px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: #008579;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* STATISTIKA */
+
+.pr-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.pr-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 23px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+}
+
+.pr-stat-card span {
+  color: #81919b;
+  font-size: 13px;
+}
+
+.pr-stat-card strong {
+  color: #008579;
+  font-size: 30px;
+}
+
+/* SEZNAM PONUDB */
+
+.pr-results {
+  margin-top: 24px;
+  min-width: 0;
+}
+
+.pr-results-header {
+  margin-bottom: 18px;
+}
+
+.pr-results-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 19px;
+  color: #20343b;
+}
+
+.pr-results-header h2 span {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #e5f4f0;
+  color: #008579;
+  font-size: 12px;
+}
+
+.pr-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.pr-offer-card {
+  min-width: 0;
+  padding: 24px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.025);
+}
+
+.pr-offer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pr-eyebrow {
+  color: #94a3ab;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.pr-offer-header h3 {
+  margin: 9px 0;
+  color: #20343b;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.pr-offer-header p {
+  margin: 0;
+  color: #81919b;
+  font-size: 12px;
+}
+
+.pr-status {
+  flex-shrink: 0;
+  padding: 7px 11px;
+  background: #e8f5ed;
+  color: #16805c;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* IZVAJALEC */
+
+.pr-provider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  padding: 14px;
+  background: #f5f9f8;
+  border-radius: 9px;
+}
+
+.pr-provider-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 9px;
+  background: #e0f0eb;
+  color: #008579;
+  font-size: 20px;
+}
+
+.pr-provider > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pr-provider small {
+  color: #91a1aa;
+  font-size: 11px;
+}
+
+.pr-provider strong {
+  color: #30474d;
+  font-size: 14px;
+}
+
+/* CENA IN ČAS */
+
+.pr-offer-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.pr-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px;
+  border: 1px solid #e6edee;
+  border-radius: 9px;
+}
+
+.pr-metric small {
+  color: #81919b;
+  font-size: 11px;
+}
+
+.pr-metric strong {
+  color: #20343b;
+  font-size: 21px;
+}
+
+.pr-best {
+  color: #008579;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* OPIS PONUDBE */
+
+.pr-description {
+  margin-top: 22px;
+  padding-top: 19px;
+  border-top: 1px solid #edf1f3;
+}
+
+.pr-description strong {
+  color: #30474d;
+  font-size: 13px;
+}
+
+.pr-description p {
+  margin: 10px 0 0;
+  color: #657b86;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* SPODNJI DEL */
+
+.pr-offer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1f3;
+}
+
+.pr-offer-footer span {
+  color: #94a3ab;
+  font-size: 11px;
+}
+
+.pr-offer-footer a {
+  color: #008579;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pr-offer-footer a:hover {
+  text-decoration: underline;
+}
+
+.pr-empty {
+  padding: 55px 20px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+  text-align: center;
+  color: #81919b;
+  font-size: 14px;
+}
+
+/* ODZIVNOST */
+
+@media (max-width: 1200px) {
+  .pr-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pr-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .pr-offer-card {
+    padding: 18px;
+  }
+
+  .pr-offer-header {
+    flex-direction: column;
+  }
+
+  .pr-metric strong {
+    font-size: 18px;
+  }
+}
