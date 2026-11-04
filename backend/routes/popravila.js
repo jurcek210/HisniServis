@@ -17,7 +17,7 @@ const upload = multer({
     const dovoljeniTipi = [
       "image/jpeg",
       "image/png",
-      "image/webp",
+      "iage/webp",
     ];
 
     if (!dovoljeniTipi.includes(file.mimetype)) {
@@ -45,7 +45,7 @@ router.post(
   },
   async (req, res) => {
     try {
-      const { naslov, kategorija, opis } = req.body;
+      const { naslov, kategorija, opis, lokacija } = req.body;
 
       if (
         typeof naslov !== "string" ||
@@ -65,6 +65,8 @@ router.post(
         naslov: naslov.trim(),
         kategorija: kategorija.trim(),
         opis: opis.trim(),
+        lokacija: lokacija.trim(),
+
       });
 
       if (req.file) {
@@ -83,6 +85,7 @@ router.post(
           naslov: novoPopravilo.naslov,
           kategorija: novoPopravilo.kategorija,
           opis: novoPopravilo.opis,
+          lokacija: novoPopravilo.lokacija,
           status: novoPopravilo.status,
           datum_objave: novoPopravilo.datum_objave,
           fotografijaDodana: !!req.file,
@@ -140,47 +143,45 @@ router.get("/:id/fotografija", preveriJWT, async (req, res) => {
 });
 
 
-router.get(
-  "/",
-  async (req, res) => {
-    try {
-      const popravila = await Popravilo.find({
-        status: "ODPRTO"
-      })
-        .select(
-          "stanovalec naslov kategorija opis status datum_objave fotografija.contentType"
-        )
-        .sort({ datum_objave: -1 })
-        .lean();
+router.get("/", async (req, res) => {
+  try {
+    const popravila = await Popravilo.find({
+      status: "ODPRTO",
+    })
+      .select(
+        "stanovalec naslov kategorija opis lokacija status datum_objave fotografija.contentType"
+      )
+      .sort({ datum_objave: -1 })
+      .lean();
 
-      const seznam = popravila.map((popravilo) => ({
-        id: popravilo._id,
-        naslov: popravilo.naslov,
-        kategorija: popravilo.kategorija,
-        opis: popravilo.opis,
-        status: popravilo.status,
-        datum_objave: popravilo.datum_objave,
-        stanovalec: popravilo.stanovalec?.toString(),
-        fotografijaDodana: Boolean(
-          popravilo.fotografija?.contentType
-        ),
-      }));
+    const seznam = popravila.map((popravilo) => ({
+      id: popravilo._id,
+      stanovalec: popravilo.stanovalec?.toString(),
+      naslov: popravilo.naslov,
+      kategorija: popravilo.kategorija,
+      opis: popravilo.opis,
+      lokacija: popravilo.lokacija || null,
+      status: popravilo.status,
+      datum_objave: popravilo.datum_objave,
+      fotografijaDodana: Boolean(
+        popravilo.fotografija?.contentType
+      ),
+    }));
 
-      return res.status(200).json({
-        message: "Seznam popravil uspešno pridobljen.",
-        stevilo: seznam.length,
-        popravila: seznam,
-      });
+    return res.status(200).json({
+      message: "Seznam popravil uspešno pridobljen.",
+      stevilo: seznam.length,
+      popravila: seznam,
+    });
 
-    } catch (error) {
-      console.error(error);
+  } catch (error) {
+    console.error(error);
 
-      return res.status(500).json({
-        message: "Napaka pri pridobivanju popravil.",
-      });
-    }
+    return res.status(500).json({
+      message: "Napaka pri pridobivanju popravil.",
+    });
   }
-);
+});
 
 
 router.patch("/:id", preveriJWT, async (req, res) => {
@@ -208,21 +209,23 @@ router.patch("/:id", preveriJWT, async (req, res) => {
       });
     }
 
-    const { naslov, kategorija, opis } = req.body;
+    const { naslov, kategorija, opis, lokacija } = req.body;
 
     if (
       typeof naslov !== "string" || !naslov.trim() ||
       typeof kategorija !== "string" || !kategorija.trim() ||
-      typeof opis !== "string" || !opis.trim()
+      typeof opis !== "string" || !opis.trim() ||
+      typeof lokacija !== "string" || !lokacija.trim()
     ) {
       return res.status(400).json({
-        message: "Vsa obvezna polja morajo biti izpolnjena.",
+        message: "Naslov, kategorija, opis in lokacija so obvezni.",
       });
     }
 
     popravilo.naslov = naslov.trim();
     popravilo.kategorija = kategorija.trim();
     popravilo.opis = opis.trim();
+    popravilo.lokacija = lokacija.trim();
 
     await popravilo.save();
 
