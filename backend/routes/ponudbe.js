@@ -301,5 +301,186 @@ router.get(
   }
 );
 
+/*
+  PATCH /api/ponudbe/:ponudbaId/izberi
+
+  Stanovalec izbere ponudbo za svoje popravilo.
+  Izbrana ponudba dobi status SPREJETA,
+  popravilo pa status V_TEKU.
+*/
+
+router.patch(
+  "/:ponudbaId/izberi",
+  preveriJWT,
+  preveriVlogo("Stanovalec"),
+  async (req, res) => {
+    const { ponudbaId } = req.params;
+
+    // PREVERJANJE ID-JA PONUDBE
+    if (!mongoose.isValidObjectId(ponudbaId)) {
+      return res.status(400).json({
+        message: "Neveljaven ID ponudbe.",
+      });
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+      let izbranaPonudba;
+      let posodobljenoPopravilo;
+
+      await session.withTransaction(async () => {
+
+        const ponudba = await Ponudba.findById(
+          ponudbaId
+        ).session(session);
+
+        if (!ponudba) {
+          const error = new Error(
+            "Ponudba ne obstaja."
+          );
+          error.httpStatus = 404;
+          throw error;
+        }
+
+        const popravilo = await Popravilo.findById(
+          ponudba.popravilo
+        ).session(session);
+
+        if (!popravilo) {
+          const error = new Error(
+            "Popravilo ne obstaja."
+          );
+          error.httpStatus = 404;
+          throw error;
+        }
+
+        const jeLastnik =
+          popravilo.stanovalec.toString() ===
+          req.uporabnik.id;
+
+        if (!jeLastnik) {
+          const error = new Error(
+            "Izberete lahko samo ponudbe za svoja popravila."
+          );
+          error.httpStatus = 403;
+          throw error;
+        }
+
+        if (popravilo.status !== "ODPRTO") {
+          const error = new Error(
+            "Za to popravilo ni več mogoče izbrati ponudbe."
+          );
+          error.httpStatus = 409;
+          throw error;
+        }
+
+        if (ponudba.status !== "ODDANA") {
+          const error = new Error(
+            "Izberete lahko samo ponudbo s statusom ODDANA."
+          );
+          error.httpStatus = 409;
+          throw error;
+        }
+
+        posodobljenoPopravilo =
+          await Popravilo.findOneAndUpdate(
+            {
+              _id: popravilo._id,
+              stanovalec: req.uporabnik.id,
+              status: "ODPRTO",
+            },
+            {
+              $set: { status: "V_TEKU" },
+            },
+            {
+              new: true,
+              session,
+              runValidators: true,
+            }
+          );
+
+        if (!posodobljenoPopravilo) {
+          const error = new Error(
+            "Popravilo ni več na voljo za izbiro ponudbe."
+          );
+          error.httpStatus = 409;
+          throw error;
+        }
+
+        izbranaPonudba =
+          await Ponudba.findOneAndUpdate(
+            {
+              _id: ponudbaId,
+              popravilo: popravilo._id,
+              status: "ODDANA",
+            },
+            {
+              $set: { status: "SPREJETA" },
+            },
+            {
+              new: true,
+              session,
+              runValidators: true,
+            }
+          );
+
+        if (!izbranaPonudba) {
+          const error = new Error(
+            "Ponudbe ni več mogoče sprejeti."
+          );
+          error.httpStatus = 409;
+          throw error;
+        }
+      });
+
+      return res.status(200).json({
+        message: "Ponudba je bila uspešno izbrana.",
+        ponudba: {
+          id: izbranaPonudba._id,
+          popravilo: izbranaPonudba.popravilo,
+          izvajalec: izbranaPonudba.izvajalec,
+          cena: izbranaPonudba.cena,
+          opis: izbranaPonudba.opis,
+          predviden_cas:
+            izbranaPonudba.predviden_cas,
+          status: izbranaPonudba.status,
+        },
+        popravilo: {
+          id: posodobljenoPopravilo._id,
+          naslov: posodobljenoPopravilo.naslov,
+          status: posodobljenoPopravilo.status,
+        },
+      });
+
+    } catch (error) {
+      if (error.httpStatus) {
+        return res.status(error.httpStatus).json({
+          message: error.message,
+        });
+      }
+
+      if (
+        error.code === 112 ||
+        error.hasErrorLabel?.("TransientTransactionError")
+      ) {
+        return res.status(409).json({
+          message:
+            "Popravilo se je med izbiro spremenilo. Osvežite podatke.",
+        });
+      }
+
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri izbiri ponudbe.",
+      });
+
+    } finally {
+      await session.endSession();
+    }
+  }
+);
+
 
 export default router;
