@@ -36,6 +36,12 @@ const popraviloSchema = new mongoose.Schema({
     },
   },
 
+  lokacija: {
+  type: String,
+  trim: true,
+  default: null,
+  },
+
   status: {
     type: String,
     enum: ["ODPRTO", "V_TEKU", "ZAKLJUCENO"],

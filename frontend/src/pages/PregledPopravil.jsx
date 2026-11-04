@@ -15,6 +15,24 @@ const kategorije = [
   "Drugo",
 ];
 
+const mesta = [
+  "Ljubljana",
+  "Maribor",
+  "Kranj",
+  "Celje",
+  "Koper",
+  "Velenje",
+  "Novo mesto",
+  "Ptuj",
+  "Trbovlje",
+  "Kamnik",
+  "Jesenice",
+  "Nova Gorica",
+  "Domžale",
+  "Škofja Loka",
+  "Murska Sobota",
+];
+
 function PregledPopravil({ uporabnik, token }) {
   const navigate = useNavigate();
 
@@ -25,6 +43,7 @@ function PregledPopravil({ uporabnik, token }) {
 
   const [iskanje, setIskanje] = useState("");
   const [kategorija, setKategorija] = useState("");
+  const [lokacija, setLokacija] = useState("");
   const [razvrstitev, setRazvrstitev] = useState("najnovejsa");
   const [stran, setStran] = useState(1);
 
@@ -35,6 +54,7 @@ function PregledPopravil({ uporabnik, token }) {
   const [obrazec, setObrazec] = useState({
     naslov: "",
     kategorija: "",
+    lokacija: "",
     opis: "",
   });
 
@@ -43,6 +63,7 @@ function PregledPopravil({ uporabnik, token }) {
 
   const jeLastnik = (popravilo) =>
     vloga === "Stanovalec" &&
+    Boolean(uporabnikId) &&
     String(popravilo.stanovalec) === String(uporabnikId);
 
   const lahkoIzbrise = (popravilo) =>
@@ -89,6 +110,7 @@ function PregledPopravil({ uporabnik, token }) {
     };
 
     nalozi();
+
     return () => controller.abort();
   }, []);
 
@@ -101,29 +123,59 @@ function PregledPopravil({ uporabnik, token }) {
           popravilo.naslov,
           popravilo.opis,
           popravilo.kategorija,
-        ].join(" ").toLowerCase();
+          popravilo.lokacija,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        const ustrezaIskanju =
+          !iskano || besedilo.includes(iskano);
+
+        const ustrezaKategoriji =
+          !kategorija ||
+          popravilo.kategorija === kategorija;
+
+        const ustrezaLokaciji =
+          !lokacija ||
+          popravilo.lokacija === lokacija;
 
         return (
-          (!iskano || besedilo.includes(iskano)) &&
-          (!kategorija || popravilo.kategorija === kategorija)
+          ustrezaIskanju &&
+          ustrezaKategoriji &&
+          ustrezaLokaciji
         );
       })
       .sort((a, b) => {
-        const datumA = new Date(a.datum_objave).getTime();
-        const datumB = new Date(b.datum_objave).getTime();
+        const datumA = new Date(
+          a.datum_objave
+        ).getTime();
+
+        const datumB = new Date(
+          b.datum_objave
+        ).getTime();
 
         return razvrstitev === "najnovejsa"
           ? datumB - datumA
           : datumA - datumB;
       });
-  }, [popravila, iskanje, kategorija, razvrstitev]);
+  }, [
+    popravila,
+    iskanje,
+    kategorija,
+    lokacija,
+    razvrstitev,
+  ]);
 
   const steviloStrani = Math.max(
     1,
     Math.ceil(filtriranaPopravila.length / NA_STRAN)
   );
 
-  const trenutnaStran = Math.min(stran, steviloStrani);
+  const trenutnaStran = Math.min(
+    stran,
+    steviloStrani
+  );
 
   const prikazanaPopravila = filtriranaPopravila.slice(
     (trenutnaStran - 1) * NA_STRAN,
@@ -138,14 +190,19 @@ function PregledPopravil({ uporabnik, token }) {
   const ponastaviFiltre = () => {
     setIskanje("");
     setKategorija("");
+    setLokacija("");
     setRazvrstitev("najnovejsa");
     setStran(1);
   };
 
   const izbrisiPopravilo = async (popravilo) => {
-    if (!window.confirm(
-      `Ali res želite izbrisati "${popravilo.naslov}"?`
-    )) return;
+    if (
+      !window.confirm(
+        `Ali res želite izbrisati "${popravilo.naslov}"?`
+      )
+    ) {
+      return;
+    }
 
     setNapaka("");
     setSporocilo("");
@@ -172,6 +229,7 @@ function PregledPopravil({ uporabnik, token }) {
       setIzbrano(null);
       setUrejanje(null);
       setSporocilo(data.message);
+
       await osvezi();
     } catch (error) {
       setNapaka(error.message);
@@ -186,17 +244,30 @@ function PregledPopravil({ uporabnik, token }) {
     setObrazec({
       naslov: popravilo.naslov,
       kategorija: popravilo.kategorija,
+      lokacija: popravilo.lokacija || "",
       opis: popravilo.opis,
     });
   };
 
   const shraniSpremembe = async (e) => {
     e.preventDefault();
+
     setShranjevanje(true);
     setNapaka("");
     setSporocilo("");
 
     try {
+      if (
+        !obrazec.naslov.trim() ||
+        !obrazec.kategorija ||
+        !obrazec.lokacija ||
+        !obrazec.opis.trim()
+      ) {
+        throw new Error(
+          "Izpolnite vsa obvezna polja."
+        );
+      }
+
       const response = await fetch(
         `${API_URL}/api/popravila/${urejanje}`,
         {
@@ -219,6 +290,7 @@ function PregledPopravil({ uporabnik, token }) {
 
       setUrejanje(null);
       setSporocilo(data.message);
+
       await osvezi();
     } catch (error) {
       setNapaka(error.message);
@@ -228,15 +300,19 @@ function PregledPopravil({ uporabnik, token }) {
   };
 
   const datum = (vrednost) =>
-    new Date(vrednost).toLocaleDateString("sl-SI");
+    vrednost
+      ? new Date(vrednost).toLocaleDateString("sl-SI")
+      : "Ni navedeno";
 
   return (
     <div className="pp-layout">
-      {/* ZGORNJA NAVIGACIJA */}
+
       <header className="pp-header">
         <Link to="/popravila" className="pp-brand">
           <span className="pp-brand-icon">⌂</span>
+
           <strong>HišniServis</strong>
+
           <span className="pp-brand-subtitle">
             Delovni prostor
           </span>
@@ -250,19 +326,24 @@ function PregledPopravil({ uporabnik, token }) {
           </span>
 
           {vloga === "Gost" ? (
-            <Link to="/login" className="pp-header-btn">
+            <Link
+              to="/login"
+              className="pp-header-btn"
+            >
               Prijava
             </Link>
           ) : (
             <button
               className="pp-header-btn"
-              onClick={() => navigate(
-                vloga === "Administrator"
-                  ? "/admin"
-                  : vloga === "Izvajalec"
+              onClick={() =>
+                navigate(
+                  vloga === "Administrator"
+                    ? "/admin"
+                    : vloga === "Izvajalec"
                     ? "/izvajalec"
                     : "/stanovalec"
-              )}
+                )
+              }
             >
               Moj račun
             </button>
@@ -270,7 +351,6 @@ function PregledPopravil({ uporabnik, token }) {
         </div>
       </header>
 
-      {/* STRANSKI MENI */}
       <aside className="pp-sidebar">
         <div className="pp-sidebar-content">
           <div className="pp-sidebar-title">
@@ -282,21 +362,23 @@ function PregledPopravil({ uporabnik, token }) {
               vloga === "Gost"
                 ? "/login"
                 : vloga === "Administrator"
-                  ? "/admin"
-                  : vloga === "Izvajalec"
-                    ? "/izvajalec"
-                    : "/stanovalec"
+                ? "/admin"
+                : vloga === "Izvajalec"
+                ? "/izvajalec"
+                : "/stanovalec"
             }
             className="pp-menu-item"
           >
-            <span>▦</span> Pregled
+            <span>▦</span>
+            Pregled
           </Link>
 
           <Link
             to="/popravila"
             className="pp-menu-item active"
           >
-            <span>▤</span> Razpoložljiva popravila
+            <span>▤</span>
+            Razpoložljiva popravila
           </Link>
 
           {vloga === "Stanovalec" && (
@@ -304,7 +386,8 @@ function PregledPopravil({ uporabnik, token }) {
               to="/stanovalec/objavi"
               className="pp-menu-item"
             >
-              <span>＋</span> Objavi popravilo
+              <span>＋</span>
+              Objavi popravilo
             </Link>
           )}
 
@@ -317,31 +400,39 @@ function PregledPopravil({ uporabnik, token }) {
 
         <div className="pp-sidebar-bottom">
           <strong>Potrebujete pomoč?</strong>
-          <p>Upravljajte popravila na enem mestu.</p>
+
+          <p>
+            Upravljajte popravila na enem mestu.
+          </p>
         </div>
       </aside>
 
-      {/* GLAVNA VSEBINA */}
       <main className="pp-main">
         <div className="pp-breadcrumb">
-          Delovni prostor <span>›</span> Razpoložljiva popravila
+          Delovni prostor
+          <span>›</span>
+          Razpoložljiva popravila
         </div>
 
         <div className="pp-heading">
-          <h1>Poiščite svojo naslednjo priložnost.</h1>
+          <h1>
+            Poiščite svojo naslednjo priložnost.
+          </h1>
+
           <p>
             Prebrskajte objavljena popravila in poiščite
             ustrezno delo.
           </p>
         </div>
 
-        {/* ISKALNIK IN FILTRI */}
         <section className="pp-filters">
           <div className="pp-filters-row">
+
             <div className="pp-field pp-search-field">
               <label htmlFor="pp-iskanje">
                 Išči popravila
               </label>
+
               <input
                 id="pp-iskanje"
                 type="search"
@@ -358,6 +449,7 @@ function PregledPopravil({ uporabnik, token }) {
               <label htmlFor="pp-kategorija">
                 Kategorija
               </label>
+
               <select
                 id="pp-kategorija"
                 value={kategorija}
@@ -366,10 +458,41 @@ function PregledPopravil({ uporabnik, token }) {
                   setStran(1);
                 }}
               >
-                <option value="">Vse kategorije</option>
+                <option value="">
+                  Vse kategorije
+                </option>
+
                 {kategorije.map((k) => (
                   <option key={k} value={k}>
                     {k}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="pp-field">
+              <label htmlFor="pp-lokacija">
+                Lokacija
+              </label>
+
+              <select
+                id="pp-lokacija"
+                value={lokacija}
+                onChange={(e) => {
+                  setLokacija(e.target.value);
+                  setStran(1);
+                }}
+              >
+                <option value="">
+                  Vse lokacije
+                </option>
+
+                {mesta.map((mesto) => (
+                  <option
+                    key={mesto}
+                    value={mesto}
+                  >
+                    {mesto}
                   </option>
                 ))}
               </select>
@@ -379,14 +502,21 @@ function PregledPopravil({ uporabnik, token }) {
           <div className="pp-filters-bottom">
             <div>
               <span>Aktivni filtri: </span>
-              {kategorija || iskanje ? (
+
+              {kategorija || lokacija || iskanje ? (
                 <strong>
-                  {kategorija || "Vse kategorije"}
-                  {iskanje ? ` · ${iskanje}` : ""}
+                  {[
+                    kategorija,
+                    lokacija,
+                    iskanje,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </strong>
               ) : (
                 <span>Brez filtrov</span>
               )}
+
               <button
                 className="pp-reset"
                 onClick={ponastaviFiltre}
@@ -396,13 +526,17 @@ function PregledPopravil({ uporabnik, token }) {
             </div>
 
             <span>
-              {filtriranaPopravila.length} popravil ustreza filtrom
+              {filtriranaPopravila.length} popravil
+              ustreza filtrom
             </span>
           </div>
         </section>
 
         {napaka && (
-          <div className="pp-alert pp-error" role="alert">
+          <div
+            className="pp-alert pp-error"
+            role="alert"
+          >
             {napaka}
           </div>
         )}
@@ -413,22 +547,32 @@ function PregledPopravil({ uporabnik, token }) {
           </div>
         )}
 
-        {/* SEZNAM IN DESNI PANEL */}
         <div className="pp-content-grid">
           <section className="pp-results">
+
             <div className="pp-results-header">
               <h2>
                 Razpoložljiva popravila
-                <span>{filtriranaPopravila.length}</span>
+
+                <span>
+                  {filtriranaPopravila.length}
+                </span>
               </h2>
 
               <select
                 aria-label="Razvrstitev popravil"
                 value={razvrstitev}
-                onChange={(e) => setRazvrstitev(e.target.value)}
+                onChange={(e) =>
+                  setRazvrstitev(e.target.value)
+                }
               >
-                <option value="najnovejsa">Najnovejše</option>
-                <option value="najstarejsa">Najstarejše</option>
+                <option value="najnovejsa">
+                  Najnovejše
+                </option>
+
+                <option value="najstarejsa">
+                  Najstarejše
+                </option>
               </select>
             </div>
 
@@ -447,18 +591,25 @@ function PregledPopravil({ uporabnik, token }) {
                     className="pp-repair-card"
                     key={popravilo.id}
                   >
+
                     <div className="pp-repair-top">
                       <h3>{popravilo.naslov}</h3>
+
                       <span className="pp-status">
                         {popravilo.status}
                       </span>
                     </div>
 
                     <div className="pp-repair-meta">
-                      <strong>{popravilo.kategorija}</strong>
+                      <strong>
+                        {popravilo.kategorija}
+                      </strong>
+
                       <span>·</span>
+
                       <span>
-                        {datum(popravilo.datum_objave)}
+                        📍 {popravilo.lokacija ||
+                          "Lokacija ni navedena"}
                       </span>
                     </div>
 
@@ -469,13 +620,14 @@ function PregledPopravil({ uporabnik, token }) {
                     <div className="pp-repair-bottom">
                       <div className="pp-repair-info">
                         <span>
-                          ◷ Objavljeno: {datum(
-                            popravilo.datum_objave
-                          )}
+                          ◷ Objavljeno:{" "}
+                          {datum(popravilo.datum_objave)}
                         </span>
 
                         {popravilo.fotografijaDodana && (
-                          <span>▧ Fotografija</span>
+                          <span>
+                            ▧ Fotografija
+                          </span>
                         )}
                       </div>
 
@@ -483,7 +635,9 @@ function PregledPopravil({ uporabnik, token }) {
                         {vloga !== "Gost" && (
                           <button
                             className="pp-details"
-                            onClick={() => setIzbrano(popravilo)}
+                            onClick={() =>
+                              setIzbrano(popravilo)
+                            }
                           >
                             Podrobnosti ›
                           </button>
@@ -492,7 +646,9 @@ function PregledPopravil({ uporabnik, token }) {
                         {jeLastnik(popravilo) && (
                           <button
                             className="pp-edit"
-                            onClick={() => zacniUrejanje(popravilo)}
+                            onClick={() =>
+                              zacniUrejanje(popravilo)
+                            }
                           >
                             Uredi
                           </button>
@@ -501,7 +657,9 @@ function PregledPopravil({ uporabnik, token }) {
                         {lahkoIzbrise(popravilo) && (
                           <button
                             className="pp-delete"
-                            onClick={() => izbrisiPopravilo(popravilo)}
+                            onClick={() =>
+                              izbrisiPopravilo(popravilo)
+                            }
                           >
                             Izbriši
                           </button>
@@ -513,17 +671,19 @@ function PregledPopravil({ uporabnik, token }) {
               </div>
             )}
 
-            {/* STRANIČENJE */}
             <div className="pp-pagination">
               <span>
-                Prikazanih {prikazanaPopravila.length} od{" "}
+                Prikazanih {prikazanaPopravila.length}
+                {" "}od{" "}
                 {filtriranaPopravila.length} popravil
               </span>
 
               <div className="pp-pages">
                 <button
                   disabled={trenutnaStran === 1}
-                  onClick={() => setStran(trenutnaStran - 1)}
+                  onClick={() =>
+                    setStran(trenutnaStran - 1)
+                  }
                 >
                   ‹
                 </button>
@@ -535,7 +695,9 @@ function PregledPopravil({ uporabnik, token }) {
                   <button
                     key={s}
                     className={
-                      s === trenutnaStran ? "selected" : ""
+                      s === trenutnaStran
+                        ? "selected"
+                        : ""
                     }
                     onClick={() => setStran(s)}
                   >
@@ -544,8 +706,12 @@ function PregledPopravil({ uporabnik, token }) {
                 ))}
 
                 <button
-                  disabled={trenutnaStran === steviloStrani}
-                  onClick={() => setStran(trenutnaStran + 1)}
+                  disabled={
+                    trenutnaStran === steviloStrani
+                  }
+                  onClick={() =>
+                    setStran(trenutnaStran + 1)
+                  }
                 >
                   ›
                 </button>
@@ -553,7 +719,6 @@ function PregledPopravil({ uporabnik, token }) {
             </div>
           </section>
 
-          {/* DESNI PANEL */}
           <aside className="pp-right-panel">
             {vloga === "Gost" ? (
               <div className="pp-info-card">
@@ -562,19 +727,27 @@ function PregledPopravil({ uporabnik, token }) {
                 </div>
 
                 <div className="pp-info-body">
-                  <h3>Trenutno brskate kot gost.</h3>
+                  <h3>
+                    Trenutno brskate kot gost.
+                  </h3>
+
                   <p>
-                    Ponudbe in osnovne podatke lahko
-                    pregledujete brez prijave. Za oddajo
-                    ponudbe se prijavite v svoj račun.
+                    Objavljena popravila lahko
+                    pregledujete brez prijave.
+                    Za oddajo ponudbe se
+                    prijavite v svoj račun.
                   </p>
 
-                  <Link to="/login" className="pp-login-btn">
+                  <Link
+                    to="/login"
+                    className="pp-login-btn"
+                  >
                     Prijavite se
                   </Link>
 
                   <small>
-                    Prijava na ponudbe je na voljo izvajalcem.
+                    Oddaja ponudb je na voljo
+                    izvajalcem.
                   </small>
                 </div>
               </div>
@@ -585,13 +758,16 @@ function PregledPopravil({ uporabnik, token }) {
                 </div>
 
                 <div className="pp-info-body">
-                  <h3>Pozdravljeni, {uporabnik.ime}!</h3>
+                  <h3>
+                    Pozdravljeni, {uporabnik.ime}!
+                  </h3>
+
                   <p>
                     {vloga === "Izvajalec"
                       ? "Preglejte razpoložljiva dela in izberite ustrezno popravilo."
                       : vloga === "Stanovalec"
-                        ? "Pregledujte popravila in upravljajte svoje objave."
-                        : "Pregledujte in upravljajte objavljena popravila."}
+                      ? "Pregledujte popravila in upravljajte svoje objave."
+                      : "Pregledujte in upravljajte objavljena popravila."}
                   </p>
 
                   {vloga === "Stanovalec" && (
@@ -607,17 +783,20 @@ function PregledPopravil({ uporabnik, token }) {
             )}
 
             <div className="pp-tip-card">
-              <strong>♧ Najprej poiščite pravo delo</strong>
+              <strong>
+                ♧ Najprej poiščite pravo delo
+              </strong>
+
               <p>
-                Uporabite filtre in iskanje po ključnih
-                besedah, ki ustrezajo vašim zanimanjem.
+                Uporabite filtre za kategorijo
+                in lokacijo ter iskanje po
+                ključnih besedah.
               </p>
             </div>
           </aside>
         </div>
       </main>
 
-      {/* PODROBNOSTI */}
       {izbrano && (
         <div
           className="pp-modal-overlay"
@@ -631,22 +810,42 @@ function PregledPopravil({ uporabnik, token }) {
             onClick={(e) => e.stopPropagation()}
           >
             <h2>{izbrano.naslov}</h2>
-            <p><strong>Kategorija:</strong> {izbrano.kategorija}</p>
-            <p><strong>Opis:</strong> {izbrano.opis}</p>
-            <p><strong>Status:</strong> {izbrano.status}</p>
+
+            <p>
+              <strong>Kategorija:</strong>{" "}
+              {izbrano.kategorija}
+            </p>
+
+            <p>
+              <strong>Lokacija:</strong>{" "}
+              {izbrano.lokacija ||
+                "Lokacija ni navedena"}
+            </p>
+
+            <p>
+              <strong>Opis:</strong>{" "}
+              {izbrano.opis}
+            </p>
+
+            <p>
+              <strong>Status:</strong>{" "}
+              {izbrano.status}
+            </p>
+
             <p>
               <strong>Objavljeno:</strong>{" "}
               {datum(izbrano.datum_objave)}
             </p>
 
-            <button onClick={() => setIzbrano(null)}>
+            <button
+              onClick={() => setIzbrano(null)}
+            >
               Zapri
             </button>
           </div>
         </div>
       )}
 
-      {/* UREJANJE */}
       {urejanje && (
         <div
           className="pp-modal-overlay"
@@ -662,46 +861,99 @@ function PregledPopravil({ uporabnik, token }) {
             <h2>Uredi popravilo</h2>
 
             <form onSubmit={shraniSpremembe}>
-              <label htmlFor="uredi-naslov">Naslov</label>
+
+              <label htmlFor="uredi-naslov">
+                Naslov
+              </label>
+
               <input
                 id="uredi-naslov"
                 required
                 value={obrazec.naslov}
-                onChange={(e) => setObrazec({
-                  ...obrazec,
-                  naslov: e.target.value,
-                })}
+                onChange={(e) =>
+                  setObrazec({
+                    ...obrazec,
+                    naslov: e.target.value,
+                  })
+                }
               />
 
-              <label htmlFor="uredi-kategorija">Kategorija</label>
+              <label htmlFor="uredi-kategorija">
+                Kategorija
+              </label>
+
               <select
                 id="uredi-kategorija"
                 required
                 value={obrazec.kategorija}
-                onChange={(e) => setObrazec({
-                  ...obrazec,
-                  kategorija: e.target.value,
-                })}
+                onChange={(e) =>
+                  setObrazec({
+                    ...obrazec,
+                    kategorija: e.target.value,
+                  })
+                }
               >
                 {kategorije.map((k) => (
-                  <option key={k} value={k}>{k}</option>
+                  <option
+                    key={k}
+                    value={k}
+                  >
+                    {k}
+                  </option>
                 ))}
               </select>
 
-              <label htmlFor="uredi-opis">Opis</label>
+              <label htmlFor="uredi-lokacija">
+                Lokacija
+              </label>
+
+              <select
+                id="uredi-lokacija"
+                required
+                value={obrazec.lokacija}
+                onChange={(e) =>
+                  setObrazec({
+                    ...obrazec,
+                    lokacija: e.target.value,
+                  })
+                }
+              >
+                <option value="">
+                  Izberite mesto
+                </option>
+
+                {mesta.map((mesto) => (
+                  <option
+                    key={mesto}
+                    value={mesto}
+                  >
+                    {mesto}
+                  </option>
+                ))}
+              </select>
+
+              <label htmlFor="uredi-opis">
+                Opis
+              </label>
+
               <textarea
                 id="uredi-opis"
                 required
                 rows={5}
                 value={obrazec.opis}
-                onChange={(e) => setObrazec({
-                  ...obrazec,
-                  opis: e.target.value,
-                })}
+                onChange={(e) =>
+                  setObrazec({
+                    ...obrazec,
+                    opis: e.target.value,
+                  })
+                }
               />
 
               <div className="pp-modal-actions">
-                <button type="submit" disabled={shranjevanje}>
+                <button
+                  type="submit"
+                  disabled={shranjevanje}
+                >
                   {shranjevanje
                     ? "Shranjevanje..."
                     : "Shrani spremembe"}
