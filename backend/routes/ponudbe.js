@@ -114,7 +114,6 @@ router.post(
       });
 
     } catch (error) {
-      // Podvojena ponudba - MongoDB unique index
       if (error.code === 11000) {
         return res.status(409).json({
           message:
@@ -122,7 +121,6 @@ router.post(
         });
       }
 
-      // Mongoose validacija
       if (error.name === "ValidationError") {
         return res.status(400).json({
           message: "Neveljavni podatki ponudbe.",

@@ -361,3 +361,182 @@
     padding: 20px;
   }
 }
+
+
+
+/* ODDAJA PONUDBE */
+
+.pd-offer-card {
+  background: #ffffff;
+  border: 1px solid #dce8e5;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 15px rgba(20, 50, 60, 0.03);
+}
+
+.pd-offer-card h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #20343b;
+  margin: 0 0 17px;
+}
+
+.pd-offer-note {
+  color: #718a91;
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0 0 18px;
+}
+
+/* GUMB ZA ODPIRANJE OBRAZCA */
+
+.pd-offer-open {
+  width: 100%;
+  padding: 14px 20px;
+  background: #008579;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pd-offer-open:hover {
+  background: #006b62;
+}
+
+/* OBRAZEC */
+
+.pd-offer-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pd-offer-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.pd-offer-field label {
+  color: #30474d;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pd-offer-field input,
+.pd-offer-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #dce5e8;
+  border-radius: 8px;
+  color: #20343b;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.pd-offer-field textarea {
+  resize: vertical;
+  min-height: 110px;
+  line-height: 1.6;
+}
+
+.pd-offer-field input:focus,
+.pd-offer-field textarea:focus {
+  border-color: #008579;
+  box-shadow: 0 0 0 3px rgba(0, 133, 121, 0.1);
+}
+
+.pd-offer-field small {
+  align-self: flex-end;
+  color: #91a1aa;
+  font-size: 11px;
+}
+
+/* GUMBI */
+
+.pd-offer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.pd-offer-cancel,
+.pd-offer-submit {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pd-offer-cancel {
+  background: white;
+  border: 1px solid #dce5e8;
+  color: #667e88;
+}
+
+.pd-offer-cancel:hover {
+  background: #f4f6f7;
+}
+
+.pd-offer-submit {
+  background: #008579;
+  border: 1px solid #008579;
+  color: white;
+}
+
+.pd-offer-submit:hover {
+  background: #006b62;
+}
+
+.pd-offer-submit:disabled,
+.pd-offer-cancel:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* SPOROČILA */
+
+.pd-offer-success {
+  padding: 13px 15px;
+  margin-bottom: 16px;
+  border: 1px solid #bce9d3;
+  background: #edf9f1;
+  color: #187349;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.pd-offer-error {
+  padding: 13px 15px;
+  margin-bottom: 16px;
+  border: 1px solid #f4c7c7;
+  background: #fff1f1;
+  color: #b42323;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+@media (max-width: 550px) {
+  .pd-offer-card {
+    padding: 20px;
+  }
+
+  .pd-offer-actions {
+    flex-direction: column-reverse;
+  }
+
+  .pd-offer-cancel,
+  .pd-offer-submit {
+    width: 100%;
+  }
+}
