@@ -633,14 +633,12 @@ function PregledPopravil({ uporabnik, token }) {
 
                       <div className="pp-actions">
                         {vloga !== "Gost" && (
-                          <button
+                            <button
                             className="pp-details"
-                            onClick={() =>
-                              setIzbrano(popravilo)
-                            }
-                          >
+                            onClick={() => navigate(`/popravila/${popravilo.id}`)}
+                            >
                             Podrobnosti ›
-                          </button>
+                            </button>
                         )}
 
                         {jeLastnik(popravilo) && (
