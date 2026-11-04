@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import "./PodrobnostiPopravila.css";
@@ -13,6 +14,17 @@ function PodrobnostiPopravila({ token, uporabnik }) {
   const [napaka, setNapaka] = useState("");
   const [napakaSlike, setNapakaSlike] = useState("");
 
+  const [prikaziObrazec, setPrikaziObrazec] = useState(false);
+  const [cena, setCena] = useState("");
+  const [opisPonudbe, setOpisPonudbe] = useState("");
+  const [predvidenCas, setPredvidenCas] = useState("");
+  const [oddajanje, setOddajanje] = useState(false);
+  const [sporociloPonudbe, setSporociloPonudbe] = useState("");
+  const [napakaPonudbe, setNapakaPonudbe] = useState("");
+  const [ponudbaOddana, setPonudbaOddana] = useState(false);
+
+  const jeIzvajalec = uporabnik?.vloga === "Izvajalec";
+
   useEffect(() => {
     const controller = new AbortController();
     let ustvarjenUrl = null;
@@ -24,12 +36,21 @@ function PodrobnostiPopravila({ token, uporabnik }) {
       setPopravilo(null);
       setSlikaUrl(null);
 
+      setPrikaziObrazec(false);
+      setCena("");
+      setOpisPonudbe("");
+      setPredvidenCas("");
+      setSporociloPonudbe("");
+      setNapakaPonudbe("");
+      setPonudbaOddana(false);
+
       try {
         if (!token) {
-          throw new Error("Za ogled podrobnosti se morate prijaviti.");
+          throw new Error(
+            "Za ogled podrobnosti se morate prijaviti."
+          );
         }
 
-        // PRIDOBIVANJE PODATKOV O POPRAVILU
         const response = await fetch(
           `${API_URL}/api/popravila/${id}`,
           {
@@ -44,7 +65,8 @@ function PodrobnostiPopravila({ token, uporabnik }) {
 
         if (!response.ok) {
           throw new Error(
-            data.message || "Popravila ni bilo mogoče pridobiti."
+            data.message ||
+              "Popravila ni bilo mogoče pridobiti."
           );
         }
 
@@ -52,7 +74,6 @@ function PodrobnostiPopravila({ token, uporabnik }) {
 
         setPopravilo(data.popravilo);
 
-        // PRIDOBIVANJE FOTOGRAFIJE
         if (data.popravilo.fotografijaDodana) {
           try {
             const slikaResponse = await fetch(
@@ -66,7 +87,9 @@ function PodrobnostiPopravila({ token, uporabnik }) {
             );
 
             if (!slikaResponse.ok) {
-              throw new Error("Fotografije ni bilo mogoče naložiti.");
+              throw new Error(
+                "Fotografije ni bilo mogoče naložiti."
+              );
             }
 
             const blob = await slikaResponse.blob();
@@ -105,6 +128,95 @@ function PodrobnostiPopravila({ token, uporabnik }) {
     };
   }, [id, token]);
 
+  const oddajPonudbo = async (e) => {
+    e.preventDefault();
+
+    setNapakaPonudbe("");
+    setSporociloPonudbe("");
+
+    const stevilcnaCena = Number(cena);
+    const stevilcniCas = Number(predvidenCas);
+
+    if (
+      cena.trim() === "" ||
+      !Number.isFinite(stevilcnaCena) ||
+      stevilcnaCena <= 0
+    ) {
+      setNapakaPonudbe(
+        "Vnesite veljavno ceno, večjo od 0 €."
+      );
+      return;
+    }
+
+    if (
+      predvidenCas.trim() === "" ||
+      !Number.isInteger(stevilcniCas) ||
+      stevilcniCas < 1
+    ) {
+      setNapakaPonudbe(
+        "Predviden čas mora biti vsaj 1 dan."
+      );
+      return;
+    }
+
+    if (!opisPonudbe.trim()) {
+      setNapakaPonudbe(
+        "Vnesite opis ponudbe."
+      );
+      return;
+    }
+
+    setOddajanje(true);
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/ponudbe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            popravilo: id,
+            cena: stevilcnaCena,
+            opis: opisPonudbe.trim(),
+            predviden_cas: stevilcniCas,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 409) {
+          setPonudbaOddana(true);
+          setPrikaziObrazec(false);
+        }
+
+        throw new Error(
+          data.message || "Oddaja ponudbe ni uspela."
+        );
+      }
+
+      setPonudbaOddana(true);
+      setPrikaziObrazec(false);
+
+      setCena("");
+      setOpisPonudbe("");
+      setPredvidenCas("");
+
+      setSporociloPonudbe(
+        "Ponudba je bila uspešno oddana!"
+      );
+
+    } catch (error) {
+      setNapakaPonudbe(error.message);
+    } finally {
+      setOddajanje(false);
+    }
+  };
+
   const datum = (vrednost) => {
     if (!vrednost) return "Ni navedeno";
 
@@ -121,7 +233,6 @@ function PodrobnostiPopravila({ token, uporabnik }) {
   return (
     <div className="pd-layout">
 
-      {/* NAVIGACIJA */}
       <header className="pd-header">
         <Link to="/popravila" className="pd-logo">
           <span className="pd-logo-icon">⌂</span>
@@ -136,7 +247,10 @@ function PodrobnostiPopravila({ token, uporabnik }) {
             {uporabnik?.ime} · {uporabnik?.vloga}
           </span>
 
-          <Link to="/popravila" className="pd-header-button">
+          <Link
+            to="/popravila"
+            className="pd-header-button"
+          >
             Vsa popravila
           </Link>
         </div>
@@ -144,7 +258,6 @@ function PodrobnostiPopravila({ token, uporabnik }) {
 
       <main className="pd-main">
 
-        {/* NAZAJ NA SEZNAM */}
         <Link to="/popravila" className="pd-back">
           ← Nazaj na seznam popravil
         </Link>
@@ -154,12 +267,14 @@ function PodrobnostiPopravila({ token, uporabnik }) {
             Nalaganje podatkov o popravilu...
           </div>
         ) : napaka ? (
-          <div className="pd-message pd-error" role="alert">
+          <div
+            className="pd-message pd-error"
+            role="alert"
+          >
             {napaka}
           </div>
         ) : popravilo ? (
           <>
-            {/* NASLOV POPRAVILA */}
             <div className="pd-page-heading">
               <div>
                 <div className="pd-breadcrumb">
@@ -171,7 +286,8 @@ function PodrobnostiPopravila({ token, uporabnik }) {
                 <p>
                   {popravilo.kategorija}
                   {" · "}
-                  {popravilo.lokacija || "Lokacija ni navedena"}
+                  {popravilo.lokacija ||
+                    "Lokacija ni navedena"}
                   {" · "}
                   {datum(popravilo.datum_objave)}
                 </p>
@@ -182,10 +298,8 @@ function PodrobnostiPopravila({ token, uporabnik }) {
               </span>
             </div>
 
-            {/* PODROBNOSTI */}
             <div className="pd-content-grid">
 
-              {/* LEVI DEL - FOTOGRAFIJA */}
               <section className="pd-photo-card">
                 <div className="pd-section-heading">
                   <h2>Fotografija popravila</h2>
@@ -207,9 +321,13 @@ function PodrobnostiPopravila({ token, uporabnik }) {
                     {napakaSlike ? (
                       <p>{napakaSlike}</p>
                     ) : popravilo.fotografijaDodana ? (
-                      <p>Fotografija trenutno ni na voljo.</p>
+                      <p>
+                        Fotografija trenutno ni na voljo.
+                      </p>
                     ) : (
-                      <p>Fotografija ni bila dodana.</p>
+                      <p>
+                        Fotografija ni bila dodana.
+                      </p>
                     )}
                   </div>
                 )}
@@ -221,10 +339,8 @@ function PodrobnostiPopravila({ token, uporabnik }) {
                 </div>
               </section>
 
-              {/* DESNI DEL */}
               <div className="pd-details-column">
 
-                {/* OPIS */}
                 <section className="pd-detail-card">
                   <h2>Opis popravila</h2>
 
@@ -233,13 +349,14 @@ function PodrobnostiPopravila({ token, uporabnik }) {
                   </p>
                 </section>
 
-                {/* OSNOVNE INFORMACIJE */}
                 <section className="pd-detail-card">
                   <h2>Informacije o popravilu</h2>
 
                   <div className="pd-info-row">
                     <span>Kategorija</span>
-                    <strong>{popravilo.kategorija}</strong>
+                    <strong>
+                      {popravilo.kategorija}
+                    </strong>
                   </div>
 
                   <div className="pd-info-row">
@@ -252,7 +369,9 @@ function PodrobnostiPopravila({ token, uporabnik }) {
 
                   <div className="pd-info-row">
                     <span>Status</span>
-                    <strong>{popravilo.status}</strong>
+                    <strong>
+                      {popravilo.status}
+                    </strong>
                   </div>
 
                   <div className="pd-info-row">
@@ -263,21 +382,158 @@ function PodrobnostiPopravila({ token, uporabnik }) {
                   </div>
                 </section>
 
-                {/* SPODNJI DEL */}
-                <section className="pd-action-card">
-                  <h3>Vas zanima to popravilo?</h3>
+                {jeIzvajalec && (
+                  <section className="pd-offer-card">
+                    <h2>Oddaja ponudbe</h2>
 
-                  {uporabnik?.vloga === "Izvajalec" ? (
-                    <p>
-                      Tukaj boste lahko oddali ponudbo
-                      za izvedbo popravila.
-                    </p>
-                  ) : (
-                    <p>
-                      Preglejte informacije o objavljenem
-                      popravilu in njegovo trenutno stanje.
-                    </p>
-                  )}
+                    {sporociloPonudbe && (
+                      <div
+                        className="pd-offer-success"
+                        role="status"
+                      >
+                        {sporociloPonudbe}
+                      </div>
+                    )}
+
+                    {napakaPonudbe && (
+                      <div
+                        className="pd-offer-error"
+                        role="alert"
+                      >
+                        {napakaPonudbe}
+                      </div>
+                    )}
+
+                    {ponudbaOddana ? (
+                      <p className="pd-offer-note">
+                        Za to popravilo je vaša ponudba že
+                        oddana oziroma evidentirana.
+                      </p>
+                    ) : popravilo.status !== "ODPRTO" ? (
+                      <p className="pd-offer-note">
+                        Ponudbo je mogoče oddati samo
+                        za odprta popravila.
+                      </p>
+                    ) : !prikaziObrazec ? (
+                      <>
+                        <p className="pd-offer-note">
+                          Vas zanima izvedba tega popravila?
+                          Oddajte ponudbo s svojo ceno
+                          in predvidenim časom izvedbe.
+                        </p>
+
+                        <button
+                          type="button"
+                          className="pd-offer-open"
+                          onClick={() => {
+                            setNapakaPonudbe("");
+                            setPrikaziObrazec(true);
+                          }}
+                        >
+                          + Oddaj ponudbo
+                        </button>
+                      </>
+                    ) : (
+                      <form
+                        className="pd-offer-form"
+                        onSubmit={oddajPonudbo}
+                      >
+                        <div className="pd-offer-field">
+                          <label htmlFor="ponudba-cena">
+                            Cena ponudbe (€)
+                          </label>
+
+                          <input
+                            id="ponudba-cena"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            placeholder="Npr. 150"
+                            value={cena}
+                            onChange={(e) =>
+                              setCena(e.target.value)
+                            }
+                            required
+                          />
+                        </div>
+
+                        <div className="pd-offer-field">
+                          <label htmlFor="ponudba-cas">
+                            Predviden čas izvedbe (dni)
+                          </label>
+
+                          <input
+                            id="ponudba-cas"
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="Npr. 2"
+                            value={predvidenCas}
+                            onChange={(e) =>
+                              setPredvidenCas(e.target.value)
+                            }
+                            required
+                          />
+                        </div>
+
+                        <div className="pd-offer-field">
+                          <label htmlFor="ponudba-opis">
+                            Opis ponudbe
+                          </label>
+
+                          <textarea
+                            id="ponudba-opis"
+                            rows={5}
+                            maxLength={2000}
+                            placeholder="Opišite, kako boste izvedli popravilo, kaj vključuje cena in morebitne dodatne informacije..."
+                            value={opisPonudbe}
+                            onChange={(e) =>
+                              setOpisPonudbe(e.target.value)
+                            }
+                            required
+                          />
+
+                          <small>
+                            {opisPonudbe.length}/2000 znakov
+                          </small>
+                        </div>
+
+                        <div className="pd-offer-actions">
+                          <button
+                            type="button"
+                            className="pd-offer-cancel"
+                            onClick={() => {
+                              setPrikaziObrazec(false);
+                              setNapakaPonudbe("");
+                            }}
+                            disabled={oddajanje}
+                          >
+                            Prekliči
+                          </button>
+
+                          <button
+                            type="submit"
+                            className="pd-offer-submit"
+                            disabled={oddajanje}
+                          >
+                            {oddajanje
+                              ? "Oddajanje..."
+                              : "Pošlji ponudbo"}
+                          </button>
+                        </div>
+                      </form>
+                    )}
+                  </section>
+                )}
+
+                <section className="pd-action-card">
+                  <h3>Informacije o popravilu</h3>
+
+                  <p>
+                    {jeIzvajalec
+                      ? "Preglejte podatke o popravilu in po potrebi oddajte ponudbo za izvedbo."
+                      : "Preglejte informacije o objavljenem popravilu in njegovo trenutno stanje."}
+                  </p>
 
                   <Link to="/popravila">
                     Nazaj na popravila
