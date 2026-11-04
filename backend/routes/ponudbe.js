@@ -136,4 +136,95 @@ router.post(
   }
 );
 
+
+router.get(
+  "/popravilo/:popraviloId",
+  preveriJWT,
+  preveriVlogo("Stanovalec", "Administrator"),
+  async (req, res) => {
+    try {
+      const { popraviloId } = req.params;
+
+      if (!mongoose.isValidObjectId(popraviloId)) {
+        return res.status(400).json({
+          message: "Neveljaven ID popravila.",
+        });
+      }
+
+      const popravilo = await Popravilo.findById(
+        popraviloId
+      ).select("stanovalec naslov kategorija lokacija status");
+
+      if (!popravilo) {
+        return res.status(404).json({
+          message: "Popravilo ne obstaja.",
+        });
+      }
+
+      const jeLastnik =
+        popravilo.stanovalec.toString() ===
+        req.uporabnik.id;
+
+      const jeAdministrator =
+        req.uporabnik.vloga === "Administrator";
+
+      if (!jeLastnik && !jeAdministrator) {
+        return res.status(403).json({
+          message:
+            "Pregledujete lahko samo ponudbe za svoja popravila.",
+        });
+      }
+
+      const ponudbe = await Ponudba.find({
+        popravilo: popraviloId,
+      })
+        .populate(
+          "izvajalec",
+          "ime priimek"
+        )
+        .sort({
+          datum_oddaje: -1,
+        })
+        .lean();
+
+      const seznam = ponudbe.map((ponudba) => ({
+        id: ponudba._id,
+        popravilo: ponudba.popravilo,
+        izvajalec: ponudba.izvajalec
+          ? {
+              id: ponudba.izvajalec._id,
+              ime: ponudba.izvajalec.ime,
+              priimek: ponudba.izvajalec.priimek,
+            }
+          : null,
+        cena: ponudba.cena,
+        opis: ponudba.opis,
+        predviden_cas: ponudba.predviden_cas,
+        datum_oddaje: ponudba.datum_oddaje,
+        status: ponudba.status,
+      }));
+
+      return res.status(200).json({
+        message: "Ponudbe so bile uspešno pridobljene.",
+        popravilo: {
+          id: popravilo._id,
+          naslov: popravilo.naslov,
+          kategorija: popravilo.kategorija,
+          lokacija: popravilo.lokacija,
+          status: popravilo.status,
+        },
+        stevilo: seznam.length,
+        ponudbe: seznam,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri pridobivanju ponudb.",
+      });
+    }
+  }
+);
+
 export default router;
