@@ -48,11 +48,12 @@ function PregledPopravil({ uporabnik, token }) {
   const [razvrstitev, setRazvrstitev] = useState("najnovejsa");
   const [stran, setStran] = useState(1);
 
-  const [izbrano, setIzbrano] = useState(null);
   const [urejanje, setUrejanje] = useState(null);
   const [shranjevanje, setShranjevanje] = useState(false);
 
   const [steviloPonudb, setSteviloPonudb] = useState(null);
+
+  const [steviloPotrjenih, setSteviloPotrjenih] = useState(null);
 
   const [obrazec, setObrazec] = useState({
     naslov: "",
@@ -160,6 +161,52 @@ function PregledPopravil({ uporabnik, token }) {
 
     return () => controller.abort();
     }, [uporabnik?.vloga, token]);
+
+
+
+    
+  useEffect(() => {
+    if (uporabnik?.vloga !== "Izvajalec" || !token) {
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const pridobiSteviloPotrjenih = async () => {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/ponudbe/potrjene`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            signal: controller.signal,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(
+            "Napaka pri pridobivanju potrjenih ponudb."
+          );
+        }
+
+        const data = await response.json();
+
+        if (!controller.signal.aborted) {
+          setSteviloPotrjenih(data.stevilo);
+        }
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error(error);
+        }
+      }
+    };
+
+    pridobiSteviloPotrjenih();
+
+    return () => controller.abort();
+  }, [uporabnik?.vloga, token]);
+
 
 
   const filtriranaPopravila = useMemo(() => {
@@ -274,7 +321,6 @@ function PregledPopravil({ uporabnik, token }) {
         );
       }
 
-      setIzbrano(null);
       setUrejanje(null);
       setSporocilo(data.message);
 
@@ -286,7 +332,6 @@ function PregledPopravil({ uporabnik, token }) {
 
   const zacniUrejanje = (popravilo) => {
     setNapaka("");
-    setIzbrano(null);
     setUrejanje(popravilo.id);
 
     setObrazec({
@@ -428,6 +473,22 @@ function PregledPopravil({ uporabnik, token }) {
             <span>▤</span>
             Razpoložljiva popravila
           </Link>
+
+          {vloga === "Izvajalec" && (
+          <Link
+            to="/izvajalec/ponudbe"
+            className="pp-menu-item"
+          >
+            <span>✓</span>
+            Potrjene ponudbe
+
+            <span className="pr-sidebar-count">
+              {steviloPotrjenih === null
+                ? "..."
+                : steviloPotrjenih}
+            </span>
+          </Link>
+        )}
 
           
             {vloga === "Stanovalec" && (
@@ -702,7 +763,7 @@ function PregledPopravil({ uporabnik, token }) {
                           <button
                             className="pp-details"
                             onClick={() =>
-                              setIzbrano(popravilo)
+                              navigate(`/popravila/${popravilo.id}`)
                             }
                           >
                             Podrobnosti ›
@@ -862,55 +923,6 @@ function PregledPopravil({ uporabnik, token }) {
           </aside>
         </div>
       </main>
-
-      {izbrano && (
-        <div
-          className="pp-modal-overlay"
-          onClick={() => setIzbrano(null)}
-        >
-          <div
-            className="pp-modal"
-            role="dialog"
-            aria-modal="true"
-            aria-label="Podrobnosti popravila"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2>{izbrano.naslov}</h2>
-
-            <p>
-              <strong>Kategorija:</strong>{" "}
-              {izbrano.kategorija}
-            </p>
-
-            <p>
-              <strong>Lokacija:</strong>{" "}
-              {izbrano.lokacija ||
-                "Lokacija ni navedena"}
-            </p>
-
-            <p>
-              <strong>Opis:</strong>{" "}
-              {izbrano.opis}
-            </p>
-
-            <p>
-              <strong>Status:</strong>{" "}
-              {izbrano.status}
-            </p>
-
-            <p>
-              <strong>Objavljeno:</strong>{" "}
-              {datum(izbrano.datum_objave)}
-            </p>
-
-            <button
-              onClick={() => setIzbrano(null)}
-            >
-              Zapri
-            </button>
-          </div>
-        </div>
-      )}
 
       {urejanje && (
         <div
