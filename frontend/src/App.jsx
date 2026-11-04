@@ -13,6 +13,7 @@ import ObjavaPopravila from "./pages/ObjavaPopravila";
 import PregledPopravil from "./pages/PregledPopravil";
 import PodrobnostiPopravila from "./pages/PodrobnostiPopravila";
 import PrejetePonudbe from "./pages/PrejetePonudbe";
+import PotrjenePonudbe from "./pages/PotrjenePonudbe";
 
 const API_URL = "http://localhost:5000";
 
@@ -289,6 +290,23 @@ function App() {
           )
         }
       />
+
+      
+      <Route
+        path="/izvajalec/ponudbe"
+        element={
+          prijava.uporabnik?.vloga === "Izvajalec" &&
+          prijava.token ? (
+            <PotrjenePonudbe
+              uporabnik={prijava.uporabnik}
+              token={prijava.token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
 
             
 

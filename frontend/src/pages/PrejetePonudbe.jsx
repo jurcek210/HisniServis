@@ -11,6 +11,9 @@ function PrejetePonudbe({ uporabnik, token }) {
   const [nalaganje, setNalaganje] = useState(true);
   const [napaka, setNapaka] = useState("");
 
+  const [izbiranje, setIzbiranje] = useState(null);
+  const [sporocilo, setSporocilo] = useState("");
+
   const [izbranoPopravilo, setIzbranoPopravilo] =
     useState("");
 
@@ -114,6 +117,73 @@ function PrejetePonudbe({ uporabnik, token }) {
     datum
       ? new Date(datum).toLocaleDateString("sl-SI")
       : "Ni navedeno";
+
+  
+  const izberiPonudbo = async (ponudba) => {
+    const imeIzvajalca = ponudba.izvajalec
+      ? `${ponudba.izvajalec.ime} ${ponudba.izvajalec.priimek}`
+      : "izbranega izvajalca";
+
+    const potrjeno = window.confirm(
+      `Ali želite izbrati ponudbo izvajalca ${imeIzvajalca}?\n\n` +
+      `Cena: ${oblikujCeno(ponudba.cena)}\n` +
+      `Predviden čas: ${ponudba.predviden_cas} dni\n\n` +
+      "Po potrditvi popravilo ne bo več odprto."
+    );
+
+    if (!potrjeno) return;
+
+    setIzbiranje(ponudba.id);
+    setNapaka("");
+    setSporocilo("");
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/ponudbe/${ponudba.id}/izberi`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Izbira ponudbe ni uspela."
+        );
+      }
+
+      setSporocilo("Ponudba je bila uspešno izbrana!");
+
+      // Osvežimo ponudbe iz MongoDB.
+      const osveziResponse = await fetch(
+        `${API_URL}/api/ponudbe/prejete`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!osveziResponse.ok) {
+        throw new Error(
+          "Ponudba je bila izbrana, vendar osvežitev ni uspela."
+        );
+      }
+
+      const osvezeniPodatki = await osveziResponse.json();
+      setPonudbe(osvezeniPodatki.ponudbe || []);
+
+    } catch (error) {
+      setNapaka(error.message);
+    } finally {
+      setIzbiranje(null);
+    }
+  };
+      
 
   const najnizjeCene = useMemo(() => {
     const mapa = new Map();
@@ -321,6 +391,12 @@ function PrejetePonudbe({ uporabnik, token }) {
           </div>
         )}
 
+        {sporocilo && (
+          <div className="pp-alert pp-success" role="status">
+            {sporocilo}
+          </div>
+        )}
+
         <section className="pr-results">
           <div className="pr-results-header">
             <h2>
@@ -435,6 +511,28 @@ function PrejetePonudbe({ uporabnik, token }) {
                         </Link>
                       )}
                     </div>
+
+                    
+                        {ponudba.status === "ODDANA" &&
+                          ponudba.popravilo?.status === "ODPRTO" && (
+                            <button
+                              type="button"
+                              className="pr-select-offer"
+                              onClick={() => izberiPonudbo(ponudba)}
+                              disabled={izbiranje !== null}
+                            >
+                              {izbiranje === ponudba.id
+                                ? "Potrjevanje..."
+                                : "Izberi ponudbo"}
+                            </button>
+                          )}
+
+                        {ponudba.status === "SPREJETA" && (
+                          <div className="pr-accepted">
+                            ✓ Ta ponudba je bila sprejeta
+                          </div>
+                        )}
+
                   </article>
                 );
               })}

@@ -281,3 +281,52 @@
     font-size: 18px;
   }
 }
+
+
+
+/* IZBIRA PONUDBE */
+
+.pr-select-offer {
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px 20px;
+  background: #008579;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pr-select-offer:hover {
+  background: #006b62;
+}
+
+.pr-select-offer:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pr-accepted {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 8px;
+  background: #e8f6ee;
+  color: #16784f;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.pr-sidebar-count {
+  margin-left: auto;
+  min-width: 26px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: #008579;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}

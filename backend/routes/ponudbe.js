@@ -482,5 +482,67 @@ router.patch(
   }
 );
 
+/*
+  GET /api/ponudbe/potrjene
+
+  Pridobivanje vseh sprejetih ponudb
+  trenutno prijavljenega izvajalca.
+*/
+
+router.get(
+  "/potrjene",
+  preveriJWT,
+  preveriVlogo("Izvajalec"),
+  async (req, res) => {
+    try {
+      const ponudbe = await Ponudba.find({
+        izvajalec: req.uporabnik.id,
+        status: "SPREJETA",
+      })
+        .populate(
+          "popravilo",
+          "naslov kategorija lokacija opis status datum_objave"
+        )
+        .sort({ datum_oddaje: -1 })
+        .lean();
+
+      const seznam = ponudbe.map((ponudba) => ({
+        id: ponudba._id,
+
+        popravilo: ponudba.popravilo
+          ? {
+              id: ponudba.popravilo._id,
+              naslov: ponudba.popravilo.naslov,
+              kategorija: ponudba.popravilo.kategorija,
+              lokacija: ponudba.popravilo.lokacija,
+              opis: ponudba.popravilo.opis,
+              status: ponudba.popravilo.status,
+              datum_objave: ponudba.popravilo.datum_objave,
+            }
+          : null,
+
+        cena: ponudba.cena,
+        opis: ponudba.opis,
+        predviden_cas: ponudba.predviden_cas,
+        datum_oddaje: ponudba.datum_oddaje,
+        status: ponudba.status,
+      }));
+
+      return res.status(200).json({
+        message: "Potrjene ponudbe uspešno pridobljene.",
+        stevilo: seznam.length,
+        ponudbe: seznam,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri pridobivanju potrjenih ponudb.",
+      });
+    }
+  }
+);
+
 
 export default router;
