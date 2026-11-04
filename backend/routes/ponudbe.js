@@ -227,4 +227,79 @@ router.get(
   }
 );
 
+router.get(
+  "/prejete",
+  preveriJWT,
+  preveriVlogo("Stanovalec"),
+  async (req, res) => {
+    try {
+      const popravila = await Popravilo.find({
+        stanovalec: req.uporabnik.id,
+      })
+        .select("_id")
+        .lean();
+
+      const idsPopravil = popravila.map(
+        (popravilo) => popravilo._id
+      );
+
+      const ponudbe = await Ponudba.find({
+        popravilo: { $in: idsPopravil },
+      })
+        .populate(
+          "izvajalec",
+          "ime priimek"
+        )
+        .populate(
+          "popravilo",
+          "naslov kategorija lokacija status"
+        )
+        .sort({ datum_oddaje: -1 })
+        .lean();
+
+      const seznam = ponudbe.map((ponudba) => ({
+        id: ponudba._id,
+
+        popravilo: ponudba.popravilo
+          ? {
+              id: ponudba.popravilo._id,
+              naslov: ponudba.popravilo.naslov,
+              kategorija: ponudba.popravilo.kategorija,
+              lokacija: ponudba.popravilo.lokacija,
+              status: ponudba.popravilo.status,
+            }
+          : null,
+
+        izvajalec: ponudba.izvajalec
+          ? {
+              id: ponudba.izvajalec._id,
+              ime: ponudba.izvajalec.ime,
+              priimek: ponudba.izvajalec.priimek,
+            }
+          : null,
+
+        cena: ponudba.cena,
+        opis: ponudba.opis,
+        predviden_cas: ponudba.predviden_cas,
+        datum_oddaje: ponudba.datum_oddaje,
+        status: ponudba.status,
+      }));
+
+      return res.status(200).json({
+        message: "Prejete ponudbe uspešno pridobljene.",
+        stevilo: seznam.length,
+        ponudbe: seznam,
+      });
+
+    } catch (error) {
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri pridobivanju prejetih ponudb.",
+      });
+    }
+  }
+);
+
+
 export default router;
