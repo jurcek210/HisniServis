@@ -37,7 +37,6 @@ function ObjavaPopravila({ token }) {
 
   const fileInputRef = useRef(null);
 
-  // PREDOGLED FOTOGRAFIJE
   useEffect(() => {
     if (!fotografija) {
       setPredogled(null);
@@ -50,7 +49,6 @@ function ObjavaPopravila({ token }) {
     return () => URL.revokeObjectURL(url);
   }, [fotografija]);
 
-  // IZBIRA FOTOGRAFIJE
   const izberiFotografijo = (e) => {
     const datoteka = e.target.files?.[0];
 
@@ -80,7 +78,6 @@ function ObjavaPopravila({ token }) {
     setFotografija(datoteka);
   };
 
-  // ODSTRANITEV FOTOGRAFIJE
   const odstraniFotografijo = () => {
     setFotografija(null);
 
@@ -89,7 +86,6 @@ function ObjavaPopravila({ token }) {
     }
   };
 
-  // OBJAVA POPRAVILA
   const objaviPopravilo = async (e) => {
     e.preventDefault();
 
@@ -102,7 +98,6 @@ function ObjavaPopravila({ token }) {
         throw new Error("Za objavo se morate prijaviti.");
       }
 
-      // Preverjanje obveznih podatkov
       if (
         !naslov.trim() ||
         !kategorija ||
@@ -112,7 +107,6 @@ function ObjavaPopravila({ token }) {
         throw new Error("Izpolnite vsa obvezna polja.");
       }
 
-      // Priprava podatkov
       const podatki = new FormData();
 
       podatki.append("naslov", naslov.trim());
@@ -124,7 +118,6 @@ function ObjavaPopravila({ token }) {
         podatki.append("fotografija", fotografija);
       }
 
-      // Pošiljanje na backend
       const response = await fetch(
         `${API_URL}/api/popravila`,
         {
@@ -146,7 +139,6 @@ function ObjavaPopravila({ token }) {
 
       setSporocilo("Popravilo je bilo uspešno objavljeno!");
 
-      // Ponastavitev obrazca
       setNaslov("");
       setKategorija("");
       setLokacija("");
@@ -163,7 +155,6 @@ function ObjavaPopravila({ token }) {
   return (
     <div className="op-layout">
 
-      {/* ZGORNJA NAVIGACIJA */}
       <header className="op-header">
         <Link to="/stanovalec" className="op-logo">
           <span className="op-logo-icon">⌂</span>
@@ -180,7 +171,6 @@ function ObjavaPopravila({ token }) {
 
       <main className="op-main">
 
-        {/* NAVIGACIJA */}
         <div className="op-breadcrumb">
           <Link to="/stanovalec">
             Delovni prostor
@@ -191,7 +181,6 @@ function ObjavaPopravila({ token }) {
           Nova objava
         </div>
 
-        {/* NASLOV STRANI */}
         <div className="op-page-heading">
           <h1>Objavite novo popravilo</h1>
 
@@ -202,7 +191,6 @@ function ObjavaPopravila({ token }) {
 
         <div className="op-card">
 
-          {/* LEVA STRAN */}
           <aside className="op-info">
             <span className="op-tag">
               ZA STANOVALCE
@@ -221,7 +209,6 @@ function ObjavaPopravila({ token }) {
 
             <div className="op-benefits">
 
-              {/* PRVI KORAK */}
               <div className="op-benefit">
                 <span className="op-benefit-icon">
                   ▤
@@ -237,7 +224,6 @@ function ObjavaPopravila({ token }) {
                 </div>
               </div>
 
-              {/* DRUGI KORAK */}
               <div className="op-benefit">
                 <span className="op-benefit-icon">
                   ▧
@@ -253,7 +239,6 @@ function ObjavaPopravila({ token }) {
                 </div>
               </div>
 
-              {/* TRETJI KORAK */}
               <div className="op-benefit">
                 <span className="op-benefit-icon">
                   ♧
@@ -282,7 +267,6 @@ function ObjavaPopravila({ token }) {
             </div>
           </aside>
 
-          {/* DESNA STRAN - OBRAZEC */}
           <section className="op-form-section">
             <h2>Podatki o popravilu</h2>
 
@@ -290,7 +274,6 @@ function ObjavaPopravila({ token }) {
               Izpolnite spodnja polja in objavite popravilo.
             </p>
 
-            {/* SPOROČILA */}
             {sporocilo && (
               <div className="op-success" role="status">
                 {sporocilo}
@@ -308,7 +291,6 @@ function ObjavaPopravila({ token }) {
               onSubmit={objaviPopravilo}
             >
 
-              {/* NASLOV */}
               <div className="op-field">
                 <label htmlFor="naslov">
                   Naslov popravila
@@ -325,7 +307,6 @@ function ObjavaPopravila({ token }) {
                 />
               </div>
 
-              {/* KATEGORIJA */}
               <div className="op-field">
                 <label htmlFor="kategorija">
                   Kategorija
@@ -367,7 +348,6 @@ function ObjavaPopravila({ token }) {
                 </select>
               </div>
 
-              {/* LOKACIJA */}
               <div className="op-field">
                 <label htmlFor="lokacija">
                   Lokacija popravila
@@ -398,7 +378,7 @@ function ObjavaPopravila({ token }) {
                 </small>
               </div>
 
-              {/* OPIS */}
+              
               <div className="op-field">
                 <label htmlFor="opis">
                   Opis težave
@@ -419,7 +399,6 @@ function ObjavaPopravila({ token }) {
                 </small>
               </div>
 
-              {/* FOTOGRAFIJA */}
               <div className="op-field">
                 <label htmlFor="fotografija">
                   Fotografija (neobvezno)
@@ -450,7 +429,6 @@ function ObjavaPopravila({ token }) {
                 </div>
               </div>
 
-              {/* PREDOGLED FOTOGRAFIJE */}
               {predogled && (
                 <div className="op-preview">
                   <img
@@ -467,7 +445,6 @@ function ObjavaPopravila({ token }) {
                 </div>
               )}
 
-              {/* GUMBI */}
               <div className="op-form-actions">
                 <Link
                   to="/popravila"
