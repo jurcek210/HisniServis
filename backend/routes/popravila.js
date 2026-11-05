@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 
 import preveriJWT from "../middleware/preveriJWT.js";
 import preveriVlogo from "../middleware/preveriVlogo.js";
+import Ponudba from "../models/Ponudba.js";
 
 const router = express.Router();
 
@@ -348,5 +349,153 @@ router.get("/:id", preveriJWT, async (req, res) => {
     });
   }
 });
+
+router.patch(
+  "/:id/status",
+  preveriJWT,
+  preveriVlogo("Izvajalec", "Stanovalec"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status: noviStatus } = req.body;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          message: "Neveljaven ID popravila.",
+        });
+      }
+
+      const dovoljeniStatusi = [
+        "V_DELU",
+        "CAKA_POTRDITEV",
+        "ZAKLJUCENO",
+      ];
+
+      if (!dovoljeniStatusi.includes(noviStatus)) {
+        return res.status(400).json({
+          message: "Neveljaven zahtevani status popravila.",
+        });
+      }
+
+      const popravilo = await Popravilo.findById(id);
+
+      if (!popravilo) {
+        return res.status(404).json({
+          message: "Popravilo ne obstaja.",
+        });
+      }
+
+      const trenutniStatus = popravilo.status;
+      const vloga = req.uporabnik.vloga;
+
+      const prehodi = {
+        V_TEKU: {
+          naslednji: "V_DELU",
+          vloga: "Izvajalec",
+        },
+        V_DELU: {
+          naslednji: "CAKA_POTRDITEV",
+          vloga: "Izvajalec",
+        },
+        CAKA_POTRDITEV: {
+          naslednji: "ZAKLJUCENO",
+          vloga: "Stanovalec",
+        },
+      };
+
+      const prehod = prehodi[trenutniStatus];
+
+      if (!prehod || prehod.naslednji !== noviStatus) {
+        return res.status(409).json({
+          message:
+            `Prehod iz ${trenutniStatus} v ${noviStatus} ni dovoljen.`,
+        });
+      }
+
+      if (vloga !== prehod.vloga) {
+        return res.status(403).json({
+          message:
+            "Nimate dovoljenja za to spremembo statusa.",
+        });
+      }
+
+      if (vloga === "Stanovalec") {
+        const jeLastnik =
+          popravilo.stanovalec.toString() ===
+          req.uporabnik.id;
+
+        if (!jeLastnik) {
+          return res.status(403).json({
+            message:
+              "Spreminjate lahko samo svoja popravila.",
+          });
+        }
+      }
+
+      if (vloga === "Izvajalec") {
+
+        const sprejetaPonudba = await Ponudba.findOne({
+          popravilo: id,
+          izvajalec: req.uporabnik.id,
+          status: "SPREJETA",
+        });
+
+        if (!sprejetaPonudba) {
+          return res.status(403).json({
+            message:
+              "Status lahko spreminja samo izbrani izvajalec.",
+          });
+        }
+      }
+
+      const posodobljenoPopravilo =
+        await Popravilo.findOneAndUpdate(
+          {
+            _id: id,
+            status: trenutniStatus,
+          },
+          {
+            $set: {
+              status: noviStatus,
+            },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+      if (!posodobljenoPopravilo) {
+        return res.status(409).json({
+          message:
+            "Status popravila se je medtem spremenil. Osvežite podatke.",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Status popravila je bil uspešno posodobljen.",
+        popravilo: {
+          id: posodobljenoPopravilo._id,
+          naslov: posodobljenoPopravilo.naslov,
+          prejsnji_status: trenutniStatus,
+          status: posodobljenoPopravilo.status,
+        },
+      });
+
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        return res.status(400).json({
+          message: "Neveljaven status popravila.",
+        });
+      }
+
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri spreminjanju statusa popravila.",
+      });
+    }
+  }
+);
 
 export default router;
