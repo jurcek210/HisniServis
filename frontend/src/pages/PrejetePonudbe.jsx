@@ -469,6 +469,53 @@ function PrejetePonudbe({ uporabnik, token }) {
                       </div>
                     </div>
 
+                    {ponudba.popravilo && (
+                    <div className="pr-repair-status">
+                      <div>
+                        <strong>Status popravila</strong>
+
+                        <p>
+                          {ponudba.popravilo.status === "ODPRTO" &&
+                            "Popravilo čaka na izbiro izvajalca."}
+
+                          {ponudba.popravilo.status === "V_TEKU" &&
+                            "Ponudba je bila sprejeta, delo pa še ni začeto."}
+
+                          {ponudba.popravilo.status === "V_DELU" &&
+                            "Izvajalec trenutno izvaja popravilo."}
+
+                          {ponudba.popravilo.status === "CAKA_POTRDITEV" &&
+                            "Izvajalec je zaključil delo. Čaka na potrditev stanovalca."}
+
+                          {ponudba.popravilo.status === "ZAKLJUCENO" &&
+                            "Popravilo je uspešno zaključeno."}
+                        </p>
+                      </div>
+
+                      <span
+                        className={`pr-repair-status-badge ${
+                          ponudba.popravilo.status === "ZAKLJUCENO"
+                            ? "completed"
+                            : ponudba.popravilo.status === "CAKA_POTRDITEV"
+                            ? "waiting"
+                            : ""
+                        }`}
+                      >
+                        {ponudba.popravilo.status === "ODPRTO"
+                          ? "Odprto"
+                          : ponudba.popravilo.status === "V_TEKU"
+                          ? "V teku"
+                          : ponudba.popravilo.status === "V_DELU"
+                          ? "V delu"
+                          : ponudba.popravilo.status === "CAKA_POTRDITEV"
+                          ? "Čaka na potrditev"
+                          : ponudba.popravilo.status === "ZAKLJUCENO"
+                          ? "Zaključeno"
+                          : "Neznano"}
+                      </span>
+                    </div>
+                  )}
+
                     {/* CENA IN ČAS */}
                     <div className="pr-offer-metrics">
                       <div className="pr-metric">
