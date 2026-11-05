@@ -14,6 +14,8 @@ function PrejetePonudbe({ uporabnik, token }) {
   const [izbiranje, setIzbiranje] = useState(null);
   const [sporocilo, setSporocilo] = useState("");
 
+  const [potrjevanje, setPotrjevanje] = useState(null);
+
   const [izbranoPopravilo, setIzbranoPopravilo] =
     useState("");
 
@@ -158,7 +160,6 @@ function PrejetePonudbe({ uporabnik, token }) {
 
       setSporocilo("Ponudba je bila uspešno izbrana!");
 
-      // Osvežimo ponudbe iz MongoDB.
       const osveziResponse = await fetch(
         `${API_URL}/api/ponudbe/prejete`,
         {
@@ -183,6 +184,114 @@ function PrejetePonudbe({ uporabnik, token }) {
       setIzbiranje(null);
     }
   };
+  
+const potrdiZakljucek = async (ponudba) => {
+  const popraviloId = ponudba.popravilo?.id;
+
+  if (!popraviloId || potrjevanje !== null) {
+    return;
+  }
+
+  if (
+    ponudba.status !== "SPREJETA" ||
+    ponudba.popravilo?.status !== "CAKA_POTRDITEV"
+  ) {
+    setNapaka(
+      "To popravilo še ni pripravljeno za potrditev."
+    );
+    return;
+  }
+
+  const potrjeno = window.confirm(
+    `Ali potrjujete, da je popravilo "${ponudba.popravilo.naslov}" uspešno opravljeno?\n\n` +
+    "Po potrditvi bo popravilo označeno kot ZAKLJUCENO."
+  );
+
+  if (!potrjeno) return;
+
+  setPotrjevanje(ponudba.id);
+  setNapaka("");
+  setSporocilo("");
+
+  try {
+    const response = await fetch(
+      `${API_URL}/api/popravila/${popraviloId}/status`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          status: "ZAKLJUCENO",
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        data.message ||
+        "Potrditev zaključka popravila ni uspela."
+      );
+    }
+
+    setPonudbe((prejsnje) =>
+      prejsnje.map((p) => {
+        if (
+          String(p.popravilo?.id) !==
+          String(popraviloId)
+        ) {
+          return p;
+        }
+
+        return {
+          ...p,
+          popravilo: {
+            ...p.popravilo,
+            status: data.popravilo.status,
+          },
+        };
+      })
+    );
+
+    setSporocilo(
+      "Zaključek popravila je bil uspešno potrjen!"
+    );
+
+    try {
+      const osveziResponse = await fetch(
+        `${API_URL}/api/ponudbe/prejete`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!osveziResponse.ok) {
+        throw new Error("Osvežitev ponudb ni uspela.");
+      }
+
+      const osvezeniPodatki =
+        await osveziResponse.json();
+
+      setPonudbe(osvezeniPodatki.ponudbe || []);
+    } catch (error) {
+      console.error(
+        "Napaka pri osveževanju ponudb:",
+        error
+      );
+    }
+
+  } catch (error) {
+    setNapaka(error.message);
+  } finally {
+    setPotrjevanje(null);
+  }
+};
+
       
 
   const najnizjeCene = useMemo(() => {
@@ -543,6 +652,38 @@ function PrejetePonudbe({ uporabnik, token }) {
                       <strong>Opis ponudbe</strong>
                       <p>{ponudba.opis}</p>
                     </div>
+
+                    
+                      {ponudba.status === "SPREJETA" &&
+                        ponudba.popravilo?.status === "CAKA_POTRDITEV" && (
+                          <div className="pr-confirm-section">
+                            <h4>Potrditev opravljenega dela</h4>
+
+                            <p>
+                              Izvajalec je označil popravilo kot končano.
+                              Če ste z izvedbo zadovoljni, potrdite zaključek.
+                            </p>
+
+                            <button
+                              type="button"
+                              className="pr-confirm-button"
+                              onClick={() => potrdiZakljucek(ponudba)}
+                              disabled={potrjevanje !== null}
+                            >
+                              {potrjevanje === ponudba.id
+                                ? "Potrjevanje..."
+                                : "✓ Potrdi zaključek"}
+                            </button>
+                          </div>
+                        )}
+
+                      {ponudba.status === "SPREJETA" &&
+                        ponudba.popravilo?.status === "ZAKLJUCENO" && (
+                          <div className="pr-confirmed">
+                            ✓ Popravilo je uspešno zaključeno in potrjeno.
+                          </div>
+                        )}
+
 
                     <div className="pr-offer-footer">
                       <span>
