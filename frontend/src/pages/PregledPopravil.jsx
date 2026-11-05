@@ -33,7 +33,7 @@ const mesta = [
   "Murska Sobota",
 ];
 
-function PregledPopravil({ uporabnik, token }) {
+function PregledPopravil({ uporabnik, token, onLogout}) {
   const navigate = useNavigate();
 
   // PODATKI
@@ -427,18 +427,11 @@ function PregledPopravil({ uporabnik, token }) {
             </Link>
           ) : (
             <button
+              type="button"
               className="pp-header-btn"
-              onClick={() =>
-                navigate(
-                  vloga === "Administrator"
-                    ? "/admin"
-                    : vloga === "Izvajalec"
-                    ? "/izvajalec"
-                    : "/stanovalec"
-                )
-              }
+              onClick={onLogout}
             >
-              Moj račun
+              Odjava
             </button>
           )}
         </div>

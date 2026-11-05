@@ -216,6 +216,7 @@ function App() {
         element={<Login onLogin={handleLogin} />}
       />
 
+
       {["Stanovalec", "Izvajalec", "Administrator"].map(
         (vloga) => (
           <Route
@@ -227,15 +228,13 @@ function App() {
                 token={prijava.token}
                 dovoljenaVloga={vloga}
               >
-                <ZacetnaStran
-                  uporabnik={prijava.uporabnik}
-                  onLogout={handleLogout}
-                />
+                <Navigate to="/popravila" replace />
               </PreveriPrijavo>
             }
           />
         )
       )}
+
 
       <Route
         path="/stanovalec/objavi"
@@ -256,6 +255,8 @@ function App() {
           <PregledPopravil
             uporabnik={prijava.uporabnik}
             token={prijava.token}
+            onLogout={handleLogout}
+
           />
         }
       />
