@@ -44,7 +44,7 @@ const popraviloSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["ODPRTO", "V_TEKU","V_DELU", "ZAKLJUCENO"],
+    enum: ["ODPRTO", "V_TEKU","V_DELU","CAKA_POTRDITEV", "ZAKLJUCENO"],
     default: "ODPRTO",
   },
 
