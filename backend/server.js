@@ -1,4 +1,3 @@
-
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -40,7 +39,6 @@ app.get("/api/health", (req, res) => {
   });
 });
 
-// Zagon strežnika
 async function startServer() {
   try {
     if (!["local", "atlas"].includes(DB_MODE)) {
