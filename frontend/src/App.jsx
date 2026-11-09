@@ -1,122 +1,323 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+import { useEffect, useState } from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate
+} from "react-router-dom";
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import ObjavaPopravila from "./pages/ObjavaPopravila";
+import PregledPopravil from "./pages/PregledPopravil";
+import PodrobnostiPopravila from "./pages/PodrobnostiPopravila";
+import PrejetePonudbe from "./pages/PrejetePonudbe";
+import PotrjenePonudbe from "./pages/PotrjenePonudbe";
 
-      <div className="ticks"></div>
+const API_URL = "http://localhost:5000";
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+const poti = {
+  Stanovalec: "/stanovalec",
+  Izvajalec: "/izvajalec",
+  Administrator: "/admin"
+};
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+function PreveriPrijavo({
+  uporabnik,
+  token,
+  dovoljenaVloga,
+  children
+}) {
+  if (!uporabnik || !token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (uporabnik.vloga !== dovoljenaVloga) {
+    return (
+      <Navigate
+        to={poti[uporabnik.vloga] || "/login"}
+        replace
+      />
+    );
+  }
+
+  return children;
 }
 
-export default App
+
+function ZacetnaStran({ uporabnik, onLogout }) {
+  const navigate = useNavigate();
+
+  return (
+    <div className="register-page">
+      <div className="register-card">
+        <h1>HišniServis</h1>
+        <h2>Dobrodošli, {uporabnik.ime}!</h2>
+
+        <p>
+          Prijavljeni ste kot {uporabnik.vloga}.
+        </p>
+
+        {uporabnik.vloga === "Stanovalec" && (
+          <button
+            onClick={() => navigate("/stanovalec/objavi")}
+          >
+            Objavi novo popravilo
+          </button>
+        )}
+
+        <button onClick={onLogout}>
+          Odjava
+        </button>
+
+        <button onClick={() => navigate("/popravila")}>
+          Pregled popravil
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+function App() {
+  const navigate = useNavigate();
+
+  const [prijava, setPrijava] = useState({
+    uporabnik: null,
+    token: null
+  });
+
+  const [preverjanje, setPreverjanje] = useState(true);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const preveriPrijavo = async () => {
+      try {
+        const shranjeno = sessionStorage.getItem("prijava");
+
+        if (!shranjeno) return;
+
+        const { token } = JSON.parse(shranjeno);
+
+        if (typeof token !== "string" || !token) {
+          throw new Error("JWT manjka.");
+        }
+
+        const response = await fetch(`${API_URL}/api/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          },
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error("Prijava ni več veljavna.");
+        }
+
+        const data = await response.json();
+
+        if (!poti[data.uporabnik?.vloga]) {
+          throw new Error("Neveljavna vloga uporabnika.");
+        }
+
+        const novaPrijava = {
+          uporabnik: data.uporabnik,
+          token
+        };
+
+        sessionStorage.setItem(
+          "prijava",
+          JSON.stringify(novaPrijava)
+        );
+
+        if (!controller.signal.aborted) {
+          setPrijava(novaPrijava);
+        }
+
+      } catch (error) {
+        if (controller.signal.aborted) return;
+
+        console.error("Preverjanje prijave:", error.message);
+        sessionStorage.removeItem("prijava");
+
+        setPrijava({
+          uporabnik: null,
+          token: null
+        });
+      } finally {
+        if (!controller.signal.aborted) {
+          setPreverjanje(false);
+        }
+      }
+    };
+
+    preveriPrijavo();
+
+    return () => controller.abort();
+  }, []);
+
+  const handleLogin = (uporabnik, token) => {
+    const novaPrijava = { uporabnik, token };
+
+    sessionStorage.setItem(
+      "prijava",
+      JSON.stringify(novaPrijava)
+    );
+
+    setPrijava(novaPrijava);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("prijava");
+
+    setPrijava({
+      uporabnik: null,
+      token: null
+    });
+
+    navigate("/login", { replace: true });
+  };
+
+  if (preverjanje) {
+    return (
+      <div className="register-page">
+        <div className="register-card">
+          <h2>Preverjanje prijave...</h2>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Navigate
+            to={
+              prijava.uporabnik && prijava.token
+                ? poti[prijava.uporabnik.vloga] || "/login"
+                : "/login"
+            }
+            replace
+          />
+        }
+      />
+
+      <Route
+        path="/register"
+        element={<Register />}
+      />
+
+      <Route
+        path="/login"
+        element={<Login onLogin={handleLogin} />}
+      />
+
+
+      {["Stanovalec", "Izvajalec", "Administrator"].map(
+        (vloga) => (
+          <Route
+            key={vloga}
+            path={poti[vloga]}
+            element={
+              <PreveriPrijavo
+                uporabnik={prijava.uporabnik}
+                token={prijava.token}
+                dovoljenaVloga={vloga}
+              >
+                <Navigate to="/popravila" replace />
+              </PreveriPrijavo>
+            }
+          />
+        )
+      )}
+
+
+      <Route
+        path="/stanovalec/objavi"
+        element={
+          <PreveriPrijavo
+            uporabnik={prijava.uporabnik}
+            token={prijava.token}
+            dovoljenaVloga="Stanovalec"
+          >
+            <ObjavaPopravila token={prijava.token} />
+          </PreveriPrijavo>
+        }
+      />
+
+      <Route
+        path="/popravila"
+        element={
+          <PregledPopravil
+            uporabnik={prijava.uporabnik}
+            token={prijava.token}
+            onLogout={handleLogout}
+
+          />
+        }
+      />
+
+            
+      <Route
+        path="/popravila/:id"
+        element={
+          prijava.uporabnik && prijava.token ? (
+            <PodrobnostiPopravila
+              uporabnik={prijava.uporabnik}
+              token={prijava.token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      
+      <Route
+        path="/stanovalec/ponudbe"
+        element={
+          prijava.uporabnik?.vloga === "Stanovalec" &&
+          prijava.token ? (
+            <PrejetePonudbe
+              uporabnik={prijava.uporabnik}
+              token={prijava.token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+      
+      <Route
+        path="/izvajalec/ponudbe"
+        element={
+          prijava.uporabnik?.vloga === "Izvajalec" &&
+          prijava.token ? (
+            <PotrjenePonudbe
+              uporabnik={prijava.uporabnik}
+              token={prijava.token}
+            />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
+
+
+            
+
+
+      <Route
+        path="*"
+        element={<Navigate to="/" replace />}
+      />
+    </Routes>
+  );
+}
+
+export default App;

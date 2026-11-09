@@ -3,6 +3,10 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
+import roleRoutes from "./routes/roleRoutes.js";
+import popravilaRoutes from "./routes/popravila.js";
+import ponudbeRoutes from "./routes/ponudbe.js";
 
 dotenv.config();
 
@@ -20,15 +24,11 @@ const MONGO_URI =
 app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
-<<<<<<< Updated upstream
-=======
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/popravila", popravilaRoutes);
 app.use("/api/ponudbe", ponudbeRoutes);
 
-// Preverjanje delovanja API-ja
->>>>>>> Stashed changes
 app.get("/api/health", (req, res) => {
   res.json({
     message: "HišniServis API deluje!",
@@ -64,6 +64,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Server deluje na http://localhost:${PORT}`);
     });
+
   } catch (error) {
     console.error(
       "Napaka pri povezavi z MongoDB:",

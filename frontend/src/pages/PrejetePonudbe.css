@@ -1,0 +1,551 @@
+
+@import "./PregledPopravil.css";
+
+.pr-sidebar-count {
+  margin-left: auto;
+  min-width: 26px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: #008579;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* STATISTIKA */
+
+.pr-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.pr-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 23px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+}
+
+.pr-stat-card span {
+  color: #81919b;
+  font-size: 13px;
+}
+
+.pr-stat-card strong {
+  color: #008579;
+  font-size: 30px;
+}
+
+/* SEZNAM PONUDB */
+
+.pr-results {
+  margin-top: 24px;
+  min-width: 0;
+}
+
+.pr-results-header {
+  margin-bottom: 18px;
+}
+
+.pr-results-header h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 19px;
+  color: #20343b;
+}
+
+.pr-results-header h2 span {
+  padding: 5px 10px;
+  border-radius: 20px;
+  background: #e5f4f0;
+  color: #008579;
+  font-size: 12px;
+}
+
+.pr-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.pr-offer-card {
+  min-width: 0;
+  padding: 24px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.025);
+}
+
+.pr-offer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.pr-eyebrow {
+  color: #94a3ab;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
+}
+
+.pr-offer-header h3 {
+  margin: 9px 0;
+  color: #20343b;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+
+.pr-offer-header p {
+  margin: 0;
+  color: #81919b;
+  font-size: 12px;
+}
+
+.pr-status {
+  flex-shrink: 0;
+  padding: 7px 11px;
+  background: #e8f5ed;
+  color: #16805c;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* IZVAJALEC */
+
+.pr-provider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+  padding: 14px;
+  background: #f5f9f8;
+  border-radius: 9px;
+}
+
+.pr-provider-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 9px;
+  background: #e0f0eb;
+  color: #008579;
+  font-size: 20px;
+}
+
+.pr-provider > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pr-provider small {
+  color: #91a1aa;
+  font-size: 11px;
+}
+
+.pr-provider strong {
+  color: #30474d;
+  font-size: 14px;
+}
+
+/* CENA IN ČAS */
+
+.pr-offer-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+}
+
+.pr-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px;
+  border: 1px solid #e6edee;
+  border-radius: 9px;
+}
+
+.pr-metric small {
+  color: #81919b;
+  font-size: 11px;
+}
+
+.pr-metric strong {
+  color: #20343b;
+  font-size: 21px;
+}
+
+.pr-best {
+  color: #008579;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* OPIS PONUDBE */
+
+.pr-description {
+  margin-top: 22px;
+  padding-top: 19px;
+  border-top: 1px solid #edf1f3;
+}
+
+.pr-description strong {
+  color: #30474d;
+  font-size: 13px;
+}
+
+.pr-description p {
+  margin: 10px 0 0;
+  color: #657b86;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* SPODNJI DEL */
+
+.pr-offer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid #edf1f3;
+}
+
+.pr-offer-footer span {
+  color: #94a3ab;
+  font-size: 11px;
+}
+
+.pr-offer-footer a {
+  color: #008579;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.pr-offer-footer a:hover {
+  text-decoration: underline;
+}
+
+.pr-empty {
+  padding: 55px 20px;
+  background: white;
+  border: 1px solid #e1e8eb;
+  border-radius: 12px;
+  text-align: center;
+  color: #81919b;
+  font-size: 14px;
+}
+
+/* ODZIVNOST */
+
+@media (max-width: 1200px) {
+  .pr-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pr-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .pr-offer-card {
+    padding: 18px;
+  }
+
+  .pr-offer-header {
+    flex-direction: column;
+  }
+
+  .pr-metric strong {
+    font-size: 18px;
+  }
+}
+
+
+
+/* IZBIRA PONUDBE */
+
+.pr-select-offer {
+  width: 100%;
+  margin-top: 20px;
+  padding: 13px 20px;
+  background: #008579;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pr-select-offer:hover {
+  background: #006b62;
+}
+
+.pr-select-offer:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pr-accepted {
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 8px;
+  background: #e8f6ee;
+  color: #16784f;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+.pr-sidebar-count {
+  margin-left: auto;
+  min-width: 26px;
+  padding: 4px 7px;
+  border-radius: 20px;
+  background: #008579;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+
+/* UPRAVLJANJE STATUSA POPRAVILA */
+
+.ps-status-section {
+  margin-top: 22px;
+  padding: 20px;
+  background: #f5f9f8;
+  border: 1px solid #dcebe6;
+  border-radius: 10px;
+}
+
+.ps-status-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ps-status-heading h4 {
+  margin: 0;
+  color: #20343b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ps-status-badge {
+  padding: 7px 11px;
+  background: #e0f2ed;
+  border-radius: 7px;
+  color: #008579;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ps-status-description {
+  margin: 0 0 16px;
+  color: #718a91;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ps-status-button {
+  width: 100%;
+  padding: 13px 18px;
+  background: #008579;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.ps-status-button:hover:not(:disabled) {
+  background: #006b62;
+}
+
+.ps-status-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ps-status-waiting {
+  padding: 13px;
+  background: #fff5df;
+  border: 1px solid #f0dfb5;
+  color: #966a19;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ps-status-completed {
+  padding: 13px;
+  background: #e8f6ee;
+  border: 1px solid #c7e7d5;
+  color: #16784f;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+@media (max-width: 550px) {
+  .ps-status-section {
+    padding: 15px;
+  }
+
+  .ps-status-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+
+/* STATUS POPRAVILA PRI PREJETI PONUDBI */
+
+.pr-repair-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 22px;
+  padding: 16px;
+  background: #f5f9f8;
+  border: 1px solid #e0ebe8;
+  border-radius: 9px;
+}
+
+.pr-repair-status strong {
+  font-size: 13px;
+  color: #30474d;
+}
+
+.pr-repair-status p {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #81919b;
+}
+
+.pr-repair-status-badge {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  background: #e1f2ed;
+  color: #008579;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 7px;
+  white-space: nowrap;
+}
+
+.pr-repair-status-badge.waiting {
+  background: #fff2d8;
+  color: #996515;
+}
+
+.pr-repair-status-badge.completed {
+  background: #e0f5e9;
+  color: #16784f;
+}
+
+@media (max-width: 550px) {
+  .pr-repair-status {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* POTRDITEV ZAKLJUČKA POPRAVILA */
+
+.pr-confirm-section {
+  margin-top: 22px;
+  padding: 20px;
+  background: #f0f9f6;
+  border: 1px solid #d5ebe4;
+  border-radius: 10px;
+}
+
+.pr-confirm-section h4 {
+  margin: 0 0 10px;
+  color: #20343b;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pr-confirm-section p {
+  margin: 0 0 18px;
+  color: #718a91;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.pr-confirm-button {
+  width: 100%;
+  padding: 14px 20px;
+  background: #008579;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.pr-confirm-button:hover:not(:disabled) {
+  background: #006b62;
+}
+
+.pr-confirm-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pr-confirmed {
+  margin-top: 22px;
+  padding: 16px;
+  background: #e8f6ee;
+  border: 1px solid #c7e7d5;
+  border-radius: 9px;
+  color: #16784f;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
+
+@media (max-width: 550px) {
+  .pr-confirm-section {
+    padding: 16px;
+  }
+}

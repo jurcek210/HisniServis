@@ -1,0 +1,501 @@
+
+import express from "express";
+import multer from "multer";
+import Popravilo from "../models/Popravilo.js";
+import mongoose from "mongoose";
+
+import preveriJWT from "../middleware/preveriJWT.js";
+import preveriVlogo from "../middleware/preveriVlogo.js";
+import Ponudba from "../models/Ponudba.js";
+
+const router = express.Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 2 * 1024 * 1024,
+  },
+  fileFilter: (req, file, cb) => {
+    const dovoljeniTipi = [
+      "image/jpeg",
+      "image/png",
+      "iage/webp",
+    ];
+
+    if (!dovoljeniTipi.includes(file.mimetype)) {
+      return cb(new Error("Nedovoljen format fotografije."));
+    }
+
+    cb(null, true);
+  },
+});
+
+router.post(
+  "/",
+  preveriJWT,
+  preveriVlogo("Stanovalec"),
+  (req, res, next) => {
+    upload.single("fotografija")(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({
+          message: err.message,
+        });
+      }
+
+      next();
+    });
+  },
+  async (req, res) => {
+    try {
+      const { naslov, kategorija, opis, lokacija } = req.body;
+
+      if (
+        typeof naslov !== "string" ||
+        !naslov.trim() ||
+        typeof kategorija !== "string" ||
+        !kategorija.trim() ||
+        typeof opis !== "string" ||
+        !opis.trim()
+      ) {
+        return res.status(400).json({
+          message: "Naslov, kategorija in opis so obvezni.",
+        });
+      }
+
+      const novoPopravilo = new Popravilo({
+        stanovalec: req.uporabnik.id,
+        naslov: naslov.trim(),
+        kategorija: kategorija.trim(),
+        opis: opis.trim(),
+        lokacija: lokacija.trim(),
+
+      });
+
+      if (req.file) {
+        novoPopravilo.fotografija = {
+          data: req.file.buffer,
+          contentType: req.file.mimetype,
+        };
+      }
+
+      await novoPopravilo.save();
+
+      return res.status(201).json({
+        message: "Popravilo je bilo uspešno objavljeno.",
+        popravilo: {
+          id: novoPopravilo._id,
+          naslov: novoPopravilo.naslov,
+          kategorija: novoPopravilo.kategorija,
+          opis: novoPopravilo.opis,
+          lokacija: novoPopravilo.lokacija,
+          status: novoPopravilo.status,
+          datum_objave: novoPopravilo.datum_objave,
+          fotografijaDodana: !!req.file,
+        },
+      });
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        return res.status(400).json({
+          message: "Neveljavni podatki popravila.",
+        });
+      }
+
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri shranjevanju popravila.",
+      });
+    }
+  }
+);
+
+
+router.get("/:id/fotografija", preveriJWT, async (req, res) => {
+  try {
+    const popravilo = await Popravilo.findById(req.params.id);
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    if (!popravilo.fotografija?.data) {
+      return res.status(404).json({
+        message: "Popravilo nima fotografije.",
+      });
+    }
+
+    res.set("Content-Type", popravilo.fotografija.contentType);
+    res.send(popravilo.fotografija.data);
+
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    console.error(error);
+
+    res.status(500).json({
+      message: "Napaka pri pridobivanju fotografije.",
+    });
+  }
+});
+
+
+router.get("/", async (req, res) => {
+  try {
+    const popravila = await Popravilo.find({
+      status: "ODPRTO",
+    })
+      .select(
+        "stanovalec naslov kategorija opis lokacija status datum_objave fotografija.contentType"
+      )
+      .sort({ datum_objave: -1 })
+      .lean();
+
+    const seznam = popravila.map((popravilo) => ({
+      id: popravilo._id,
+      stanovalec: popravilo.stanovalec?.toString(),
+      naslov: popravilo.naslov,
+      kategorija: popravilo.kategorija,
+      opis: popravilo.opis,
+      lokacija: popravilo.lokacija || null,
+      status: popravilo.status,
+      datum_objave: popravilo.datum_objave,
+      fotografijaDodana: Boolean(
+        popravilo.fotografija?.contentType
+      ),
+    }));
+
+    return res.status(200).json({
+      message: "Seznam popravil uspešno pridobljen.",
+      stevilo: seznam.length,
+      popravila: seznam,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri pridobivanju popravil.",
+    });
+  }
+});
+
+
+router.patch("/:id", preveriJWT, async (req, res) => {
+  try {
+    const popravilo = await Popravilo.findById(req.params.id);
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    const jeLastnik =
+      popravilo.stanovalec.toString() === req.uporabnik.id;
+
+    if (req.uporabnik.vloga !== "Stanovalec" || !jeLastnik) {
+      return res.status(403).json({
+        message: "Urejate lahko samo svoja popravila.",
+      });
+    }
+
+    if (popravilo.status !== "ODPRTO") {
+      return res.status(400).json({
+        message: "Urejate lahko samo odprta popravila.",
+      });
+    }
+
+    const { naslov, kategorija, opis, lokacija } = req.body;
+
+    if (
+      typeof naslov !== "string" || !naslov.trim() ||
+      typeof kategorija !== "string" || !kategorija.trim() ||
+      typeof opis !== "string" || !opis.trim() ||
+      typeof lokacija !== "string" || !lokacija.trim()
+    ) {
+      return res.status(400).json({
+        message: "Naslov, kategorija, opis in lokacija so obvezni.",
+      });
+    }
+
+    popravilo.naslov = naslov.trim();
+    popravilo.kategorija = kategorija.trim();
+    popravilo.opis = opis.trim();
+    popravilo.lokacija = lokacija.trim();
+
+    await popravilo.save();
+
+    return res.status(200).json({
+      message: "Popravilo je bilo uspešno posodobljeno.",
+    });
+
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri posodabljanju popravila.",
+    });
+  }
+});
+
+
+
+
+router.delete("/:id", preveriJWT, async (req, res) => {
+  try {
+    const popravilo = await Popravilo.findById(req.params.id);
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    const jeAdmin = req.uporabnik.vloga === "Administrator";
+
+    const jeLastnik =
+      req.uporabnik.vloga === "Stanovalec" &&
+      popravilo.stanovalec.toString() === req.uporabnik.id;
+
+    if (!jeAdmin && !jeLastnik) {
+      return res.status(403).json({
+        message: "Nimate dovoljenja za brisanje popravila.",
+      });
+    }
+
+    if (!jeAdmin && popravilo.status !== "ODPRTO") {
+      return res.status(400).json({
+        message: "Izbrišete lahko samo odprta popravila.",
+      });
+    }
+
+    await popravilo.deleteOne();
+
+    return res.status(200).json({
+      message: "Popravilo je bilo uspešno izbrisano.",
+    });
+
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri brisanju popravila.",
+    });
+  }
+});
+
+
+
+
+router.get("/:id", preveriJWT, async (req, res) => {
+  try {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+      return res.status(400).json({
+        message: "Neveljaven ID popravila.",
+      });
+    }
+
+    const popravilo = await Popravilo.findById(req.params.id)
+      .select(
+        "stanovalec naslov kategorija opis lokacija status datum_objave fotografija.contentType"
+      )
+      .lean();
+
+    if (!popravilo) {
+      return res.status(404).json({
+        message: "Popravilo ne obstaja.",
+      });
+    }
+
+    return res.status(200).json({
+      popravilo: {
+        id: popravilo._id,
+        naslov: popravilo.naslov,
+        kategorija: popravilo.kategorija,
+        opis: popravilo.opis,
+        lokacija: popravilo.lokacija || null,
+        status: popravilo.status,
+        datum_objave: popravilo.datum_objave,
+        stanovalec: popravilo.stanovalec?.toString(),
+        fotografijaDodana: Boolean(
+          popravilo.fotografija?.contentType
+        ),
+      },
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      message: "Napaka pri pridobivanju popravila.",
+    });
+  }
+});
+
+router.patch(
+  "/:id/status",
+  preveriJWT,
+  preveriVlogo("Izvajalec", "Stanovalec"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status: noviStatus } = req.body;
+
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).json({
+          message: "Neveljaven ID popravila.",
+        });
+      }
+
+      const dovoljeniStatusi = [
+        "V_DELU",
+        "CAKA_POTRDITEV",
+        "ZAKLJUCENO",
+      ];
+
+      if (!dovoljeniStatusi.includes(noviStatus)) {
+        return res.status(400).json({
+          message: "Neveljaven zahtevani status popravila.",
+        });
+      }
+
+      const popravilo = await Popravilo.findById(id);
+
+      if (!popravilo) {
+        return res.status(404).json({
+          message: "Popravilo ne obstaja.",
+        });
+      }
+
+      const trenutniStatus = popravilo.status;
+      const vloga = req.uporabnik.vloga;
+
+      const prehodi = {
+        V_TEKU: {
+          naslednji: "V_DELU",
+          vloga: "Izvajalec",
+        },
+        V_DELU: {
+          naslednji: "CAKA_POTRDITEV",
+          vloga: "Izvajalec",
+        },
+        CAKA_POTRDITEV: {
+          naslednji: "ZAKLJUCENO",
+          vloga: "Stanovalec",
+        },
+      };
+
+      const prehod = prehodi[trenutniStatus];
+
+      if (!prehod || prehod.naslednji !== noviStatus) {
+        return res.status(409).json({
+          message:
+            `Prehod iz ${trenutniStatus} v ${noviStatus} ni dovoljen.`,
+        });
+      }
+
+      if (vloga !== prehod.vloga) {
+        return res.status(403).json({
+          message:
+            "Nimate dovoljenja za to spremembo statusa.",
+        });
+      }
+
+      if (vloga === "Stanovalec") {
+        const jeLastnik =
+          popravilo.stanovalec.toString() ===
+          req.uporabnik.id;
+
+        if (!jeLastnik) {
+          return res.status(403).json({
+            message:
+              "Spreminjate lahko samo svoja popravila.",
+          });
+        }
+      }
+
+      if (vloga === "Izvajalec") {
+
+        const sprejetaPonudba = await Ponudba.findOne({
+          popravilo: id,
+          izvajalec: req.uporabnik.id,
+          status: "SPREJETA",
+        });
+
+        if (!sprejetaPonudba) {
+          return res.status(403).json({
+            message:
+              "Status lahko spreminja samo izbrani izvajalec.",
+          });
+        }
+      }
+
+      const posodobljenoPopravilo =
+        await Popravilo.findOneAndUpdate(
+          {
+            _id: id,
+            status: trenutniStatus,
+          },
+          {
+            $set: {
+              status: noviStatus,
+            },
+          },
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+      if (!posodobljenoPopravilo) {
+        return res.status(409).json({
+          message:
+            "Status popravila se je medtem spremenil. Osvežite podatke.",
+        });
+      }
+
+      return res.status(200).json({
+        message: "Status popravila je bil uspešno posodobljen.",
+        popravilo: {
+          id: posodobljenoPopravilo._id,
+          naslov: posodobljenoPopravilo.naslov,
+          prejsnji_status: trenutniStatus,
+          status: posodobljenoPopravilo.status,
+        },
+      });
+
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        return res.status(400).json({
+          message: "Neveljaven status popravila.",
+        });
+      }
+
+      console.error(error);
+
+      return res.status(500).json({
+        message: "Napaka pri spreminjanju statusa popravila.",
+      });
+    }
+  }
+);
+
+export default router;
